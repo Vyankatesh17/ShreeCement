@@ -1,0 +1,254 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+//Developed By Shankar Ohol 18-03-2015 On 3.30PM
+//Assigned By Amit Verma
+
+public partial class OTDisplayReport : System.Web.UI.Page
+{
+
+
+    HrPortalDtaClassDataContext HR = new HrPortalDtaClassDataContext();
+    Genreal g = new Genreal();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+
+            fillcompany();
+            fillYear();
+        }
+
+    }
+
+    #region bind methods
+    private void fillcompany()
+    {
+        try
+        {
+            var data = (from dt in HR.CompanyInfoTBs
+                        where dt.Status == 0
+                        select dt).OrderBy(dt => dt.CompanyName);
+            if (data != null && data.Count() > 0)
+            {
+
+                ddlCompanyList.DataSource = data;
+                ddlCompanyList.DataTextField = "CompanyName";
+                ddlCompanyList.DataValueField = "CompanyId";
+                ddlCompanyList.DataBind();
+                ddlCompanyList.Items.Insert(0, "--Select--");
+            }
+            else
+            {
+                ddldept.Items.Clear();
+                ddlemp.Items.Clear();
+            }
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+    private void BindDepartment(string p)
+    {
+        try
+        {
+            if (ddlCompanyList.SelectedIndex > 0)
+            {
+                var data = (from dt in HR.CompanyInfoTBs
+                            join dep in HR.MasterDeptTBs on dt.CompanyId equals dep.CompanyId
+                            where dt.CompanyName == p
+                            select dep).OrderBy(dt => dt.DeptName);
+
+                if (data != null && data.Count() > 0)
+                {
+
+                    ddldept.DataSource = data;
+                    ddldept.DataTextField = "DeptName";
+                    ddldept.DataValueField = "DeptID";
+                    ddldept.DataBind();
+                    ddldept.Items.Insert(0, "--Select--");
+                }
+                else
+                {
+                    ddldept.DataSource = null;
+                    ddldept.DataBind();
+
+                }
+
+            }
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+
+    private void FillEmployeeList()
+    {
+        try
+        {
+            if (ddlCompanyList.SelectedIndex > 0)
+            {
+                if (ddldept.SelectedIndex != 0)
+                {
+                    var data = (from dtReportHead in HR.EmployeeTBs
+                                join dep in HR.OTMasterTBs on dtReportHead.EmployeeId equals dep.EmployeeId
+                                where dtReportHead.RelivingStatus == null && dtReportHead.CompanyId == Convert.ToInt32(ddlCompanyList.SelectedValue) && dtReportHead.DeptId == Convert.ToInt32(ddldept.SelectedValue)
+                                select new
+                                {
+                                    dtReportHead.EmployeeId,
+                                    Name = dtReportHead.FName + ' ' + dtReportHead.MName + ' ' + dtReportHead.Lname
+                                }).OrderBy(dt => dt.Name);
+
+
+                    if (data != null && data.Count() > 0)
+                    {
+                        ddlemp.DataSource = data;
+                        ddlemp.DataTextField = "Name";
+                        ddlemp.DataValueField = "EmployeeId";
+                        ddlemp.DataBind();
+                        ddlemp.Items.Insert(0, "--Select--");
+                    }
+                    else
+                    {
+                        ddlemp.Items.Clear();
+                    }
+                }
+                else
+                {
+                    ddlemp.Items.Clear();
+
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+    protected void ddlCompanyList_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ddlCompanyList.SelectedIndex > 0)
+        {
+            BindDepartment(ddlCompanyList.SelectedItem.Text);
+        }
+        else
+        {
+            ddldept.Items.Clear();
+            ddlemp.Items.Clear();
+
+        }
+    }
+    protected void ddldept_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ddldept.SelectedIndex > 0)
+        {
+            FillEmployeeList();
+        }
+        else
+        {
+            ddlemp.Items.Clear();
+        }
+    }
+    protected void ddldesign_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+    }
+    #endregion
+
+    protected void btnsearch_Click(object sender, EventArgs e)
+    {
+        BindData();
+    }
+    private void fillYear()
+    {
+        DataTable Dtyears = new DataTable();
+        DataColumn years = new DataColumn("years");
+        Dtyears.Columns.Add(years);
+
+        int i = int.Parse(DateTime.Now.AddYears(-1).Date.Year.ToString());
+        for (int j = 0; j <= 50; j++)
+        {
+            DataRow DR = Dtyears.NewRow();
+            DR[0] = i.ToString();
+            Dtyears.Rows.Add(DR);
+            i++;
+
+        }
+
+        ddlYears.DataSource = Dtyears;
+        ddlYears.DataTextField = "years";
+        ddlYears.DataValueField = "years";
+        ddlYears.DataBind();
+
+
+    }
+    private void BindData()
+    {
+        if (ddlMonths.SelectedIndex > 0)
+        {
+            var Data = (from d in HR.SP_GetOTReport(Convert.ToInt32(ddlMonths.SelectedValue), Convert.ToInt32(ddlYears.SelectedItem.Text))
+                        select new
+                        {
+                            d.CompanyName,
+                            d.DeptName,
+                            Date = d.Log_Date_Time,
+                            d.Employee_Id,
+                            d.Name,
+                            d.WorkingHours,
+                            d.OTHours,
+                            d.WageHours,
+                            d.OT
+                        }).ToList();
+            if (ddlCompanyList.SelectedIndex > 0)
+            {
+
+                Data = Data.Where(d => d.CompanyName == ddlCompanyList.SelectedItem.Text).ToList();
+            }
+
+            if (ddldept.SelectedIndex > 0)
+            {
+                Data = Data.Where(d => d.DeptName == ddldept.SelectedItem.Text).ToList();
+            }
+            if (ddlemp.SelectedIndex > 0)
+            {
+                Data = Data.Where(d => d.Employee_Id == Convert.ToInt32(ddlemp.SelectedValue)).ToList();
+            }
+
+            if (Data.Count() > 0)
+            {
+                grd_OtData.DataSource = Data;
+                grd_OtData.DataBind();
+                lblcnt.Text = Data.Count().ToString();
+            }
+            else
+            {
+                grd_OtData.DataSource = null;
+                grd_OtData.DataBind();
+                lblcnt.Text = "0";
+
+            }
+
+        }
+        else
+        {
+
+            g.ShowMessage(this.Page, "Please Select Month & Year");
+        }
+    }
+    protected void grd_OtData_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grd_OtData.PageIndex = e.NewPageIndex;
+        BindData();
+    }
+}

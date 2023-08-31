@@ -1,0 +1,169 @@
+﻿<%@ Page Title="Interview Details" Language="C#" MasterPageFile="~/UserMaster.master" AutoEventWireup="true" CodeFile="InterviewDetails.aspx.cs" Inherits="Interview" %>
+
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
+<%@ Register Src="Controls/wucPopupMessageBox.ascx" TagName="Time" TagPrefix="uc1" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="Head" runat="Server">
+   
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <asp:UpdatePanel ID="updt" runat="server">
+        <ContentTemplate>
+            <fieldset id="field">
+                
+                <table  width="100%">
+
+                    <tr>
+                        <td>
+                            <asp:MultiView ID="MultiView1" runat="server">
+                                <asp:View ID="View1" runat="server">
+                                    <table width="100%">
+                                        <tr>
+                                            <td align="right">
+                                                <b>
+                                                    <asp:Label ID="lbl1" runat="server" Text="No. of Counts :">
+                                                    </asp:Label>&nbsp;
+                                            <asp:Label ID="lblcnt" runat="server">0</asp:Label></b>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <asp:GridView ID="grd_Interview" runat="server" AutoGenerateColumns="False"
+                                                    CssClass="table table-bordered table-striped" Width="100%" OnPageIndexChanging="grd_Interview_PageIndexChanging" AllowPaging="true" PageSize="10">
+                                                    <Columns>
+
+
+                                                        <asp:TemplateField HeaderText="Sr. No.">
+                                                            <ItemTemplate>
+                                                                <%#Container.DataItemIndex+1 %>
+                                                            </ItemTemplate>
+                                                        </asp:TemplateField>
+                                                        <asp:BoundField DataField="InterviewDate" HeaderText="Interview Date" DataFormatString="{0:MM/dd/yyyy}" />
+                                                        <asp:BoundField DataField="CompanyName" HeaderText="Company Name" />
+                                                       
+                                                        <asp:BoundField DataField="DeptName" HeaderText="Department Name" />
+                                                        <asp:BoundField DataField="DesigName" HeaderText="Designation Name" />
+                                                          <asp:BoundField DataField="CandidateName" HeaderText="Interviewer's Name" />
+                                                        <asp:BoundField DataField="Mobile" HeaderText="Mobile No" />
+
+                                                          <asp:BoundField DataField="Status" HeaderText="Status" />
+                                                        <asp:TemplateField HeaderText="Action">
+                            <ItemTemplate>
+                                <asp:ImageButton CommandArgument='<%#Eval("InterviewerID") %>' runat="server" ImageUrl="~/Images/a.png" ID="btnselect" OnClick="btnselect_Click" Height="50px" ToolTip="Go For Interview Status"  />
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                                                        
+
+<%--                                                        <asp:TemplateField HeaderText="Action">
+                                                            <ItemTemplate>
+                                                                <asp:LinkButton ID="Edit" runat="server" Text="Edit" OnClick="OnClick_Edit" CommandArgument='<%# Eval("InterviewerID") %>' />
+                                                            </ItemTemplate>
+                                                        </asp:TemplateField>--%>
+                                                    </Columns>
+                                                    <EmptyDataTemplate>No Record Exists.........!!</EmptyDataTemplate>
+                                                      <PagerStyle HorizontalAlign="Right" />
+                                                </asp:GridView>
+                                              
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                
+    <asp:HiddenField runat="server" ID="hdFd" />       
+
+      <asp:Label ID="lblInterID" runat="server"></asp:Label>
+
+
+
+                                                <asp:ModalPopupExtender ID="modpops" runat="server" 
+                                                    PopupControlID="PanelDisp"
+                                                     Enabled="True" TargetControlID="lblInterID">
+                                                </asp:ModalPopupExtender>
+                                                <asp:Panel runat="server" ID="PanelDisp" CssClass="bg-gray"  BorderColor="Black" BorderWidth="1 px" Width="500px" Height="250px">  
+                                                <table width="100%" cellspacing="8" CssClass="table table-bordered table-striped">
+                            <tr>
+                                <td align="center" colspan="2" rowspan="1" style="font-family: Calibri; font-size: large; color: #FF0000">Interview Details</td>
+                                <td align="center" colspan="1" rowspan="1">
+                                    <asp:ImageButton ID="imgclose0" runat="server" Height="30px" ImageUrl="~/Images/Close.jpg" OnClick="imgclose_Click" Width="30px" CausesValidation="False" />
+</td>
+                            </tr>
+                                                    <tr>
+                                                        <td>Status&nbsp;
+                                                            <asp:Label ID="Label7" runat="server" Font-Size="Medium" ForeColor="Red" Text="*" ></asp:Label>
+                                                        </td>
+                                                        <td>&nbsp;&nbsp;
+                                                            <asp:DropDownList ID="ddlStatus" runat="server" AutoPostBack="True" CssClass="form-control" OnSelectedIndexChanged="ddlStatus_SelectedIndexChanged" >
+                                                                <asp:ListItem Selected="True">Select</asp:ListItem>
+                                                                <asp:ListItem>On-Hold</asp:ListItem>
+                                                                <asp:ListItem>Reject</asp:ListItem>
+                                                                <asp:ListItem>In-Process</asp:ListItem>
+                                                            </asp:DropDownList>
+                                                        </td>
+                                                    </tr>
+                            <tr runat="server" id="trStatus" visible="false"> 
+                                <td>Next Date&nbsp;
+                                    <asp:Label ID="Label8" runat="server" Font-Size="Medium" ForeColor="Red" Text="*"></asp:Label>
+                                </td>
+                                <td>
+                                    <asp:TextBox ID="txtDate" runat="server" AutoPostBack="True" CssClass="form-control" OnTextChanged="txtDate_TextChanged"></asp:TextBox>
+                                    <asp:CalendarExtender ID="txtDate_CalendarExtender" runat="server" Enabled="True" TargetControlID="txtDate">
+                                    </asp:CalendarExtender>
+                                    <%--<asp:CompareValidator ID="cmp4" runat="server" ControlToCompare="currDate" ControlToValidate="txtDate" Display="Dynamic" ErrorMessage="Select Date" ForeColor="Red" Operator="GreaterThanEqual" ValidationGroup="S" SetFocusOnError="True" Type="Date"></asp:CompareValidator>--%>
+                                    <asp:Label ID="lblERROR" runat="server" ForeColor="Red" Visible="False"></asp:Label>
+                                    <asp:CompareValidator ID="CompareValidator1" runat="server" ControlToValidate="txtDate" Display="Dynamic" ErrorMessage="Invalid Date Format" ForeColor="Red" Operator="DataTypeCheck" SetFocusOnError="True" Type="Date" ValidationGroup="S" ValueToCompare="MM/dd/yyyy"></asp:CompareValidator>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Remarks </td>
+                                <td>
+                                    <asp:TextBox ID="txtRemarks" runat="server" CssClass="form-control"></asp:TextBox>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Interview By 
+                                    <asp:Label ID="Label9" runat="server" Font-Size="Medium" ForeColor="Red" Text="*"></asp:Label>
+                                </td>
+                                <td>
+                                    <asp:TextBox ID="txtInterBy" runat="server" CssClass="form-control"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="RequiredFieldValidator6" runat="server" ControlToValidate="txtInterBy" Display="Dynamic" ErrorMessage="Required" ForeColor="Red" ValidationGroup="S"></asp:RequiredFieldValidator>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <asp:TextBox ID="currDate" runat="server" Visible="False" CssClass="form-control"></asp:TextBox>
+                                </td>
+                                <td>
+                                    <br />
+                                    <asp:Button ID="btnSave" runat="server" CssClass="btn bg-blue-active" Text="Save" OnClick="btnSave_Click" ValidationGroup="S" />
+                                    <asp:Button ID="btnCancelPOP" runat="server" CssClass="btn bg-blue-active" Text="Cancel" OnClick="Button1_Click" CausesValidation="False" />
+                                </td>
+                            </tr>
+                        </table>
+                                                </asp:Panel>
+
+                                            </td>
+
+                                        </tr>
+                                    </table>
+                                </asp:View>
+<asp:View ID="v2" runat="server" >
+
+
+
+</asp:View>
+
+
+                            </asp:MultiView>
+                        </td>
+                    </tr>
+                </table>
+            </fieldset>
+            <uc1:Time ID="modpop" runat="server" />
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
+
+
+
+</asp:Content>
+

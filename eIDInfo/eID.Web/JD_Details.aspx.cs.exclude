@@ -1,0 +1,268 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.IO;
+
+public partial class JD_Details : System.Web.UI.Page
+{
+    HrPortalDtaClassDataContext HR = new HrPortalDtaClassDataContext();
+
+    Genreal g = new Genreal();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+        if (Session["UserId"] != null)
+        {
+            if (!IsPostBack)
+            {
+                fillEmployee();
+                BindAllData();
+            }
+        }
+        else
+        {
+            Response.Redirect("login.aspx");
+        }
+
+    }
+
+
+    private void fillEmployee()
+    {
+        var data = from d in HR.EmployeeTBs
+
+                   select new { Name = d.FName + ' ' + d.MName + ' ' + d.Lname,d.EmployeeId };
+        if (data != null && data.Count() > 0)
+        {
+
+            ddlemplyeename.DataSource = data;
+            ddlemplyeename.DataTextField = "Name";
+            ddlemplyeename.DataValueField = "EmployeeId";
+            ddlemplyeename.DataBind();
+            ddlemplyeename.Items.Insert(0, "--Select--");
+        }
+    }
+    public string HTMLToString(string htmlText)
+    {
+        string strText = string.Empty;
+        if (!string.IsNullOrEmpty(htmlText))
+        {
+            strText = System.Text.RegularExpressions.Regex.Replace(HttpUtility.HtmlDecode(htmlText), @"<[^>]*(>|$)", string.Empty);
+            // strText = System.Text.RegularExpressions.Regex.Replace(strText, @"[\s\r\n]+", string.Empty);
+        }
+        return strText;
+    }
+
+    private void AdminGrid()
+    {
+        var AllData = from da in HR.JDMasterTBs
+                      select new
+                      {
+
+                          da.JobDesc,
+                          da.JDId,
+                          Name = da.EmployeeTB.FName + ' ' + da.EmployeeTB.MName + ' ' + da.EmployeeTB.Lname,
+
+
+                          Status = da.Status == 0 ? "Active" : "In Active"
+                      };
+
+
+
+        if (AllData.Count() > 0)
+        {
+            grd_JD.DataSource = AllData;
+            grd_JD.DataBind();
+            MultiView1.ActiveViewIndex = 0;
+        }
+        else
+        {
+            grd_JD.DataSource = AllData;
+            grd_JD.DataBind();
+            MultiView1.ActiveViewIndex = 1;
+        }
+
+    }
+
+
+    private void EmployeeGrid()
+    {
+        var AllData = from da in HR.JDMasterTBs
+                      where da.EmpID == Convert.ToInt32(Session["UserId"]) 
+                      select new
+                      {
+
+                          da.JobDesc,
+                          da.JDId,
+                          Name = da.EmployeeTB.FName + ' ' + da.EmployeeTB.MName + ' ' + da.EmployeeTB.Lname,
+
+
+                          Status = da.Status == 0 ? "Active" : "In Active"
+                      };
+
+        if (AllData.Count() > 0)
+        {
+            grd_JD.DataSource = AllData;
+            grd_JD.DataBind();
+            MultiView1.ActiveViewIndex = 0;
+        }
+        else
+        {
+            grd_JD.DataSource = AllData;
+            grd_JD.DataBind();
+            MultiView1.ActiveViewIndex = 1;
+        }
+
+    }
+
+    private void BindAllData()
+    {
+
+        //bool Status = g.CheckAdmin(Convert.ToInt32(Session["UserId"]));
+        //// Check super Admin condition
+        //if (Status == true)
+        //{
+
+        //    ddlemplyeename.Enabled = true;
+        //}
+        //else
+        //{
+
+        //    ddlemplyeename.SelectedValue = Convert.ToString(Session["UserId"]);
+        //    ddlemplyeename.Enabled = false;
+        //}
+        bool Status = g.CheckAdmin(Convert.ToInt32(Session["UserId"]));
+        // Check super Admin condition
+        if (Status == true)
+        {
+            ddlemplyeename.Enabled = true;
+            AdminGrid();
+
+        }
+        else
+        {
+            ddlemplyeename.SelectedValue = Convert.ToString(Session["UserId"]);
+             ddlemplyeename.Enabled = false;
+            EmployeeGrid();
+
+        }
+
+    }
+
+    protected void btnsubmit_Click(object sender, EventArgs e)
+    {
+        if (btnsubmit.Text == "Save")
+        {
+            var dt = from p in HR.JDMasterTBs.Where(d => d.EmpID == Convert.ToInt32(ddlemplyeename.SelectedValue)) select p;
+             if (dt.Count() > 0)
+             {
+                 modpop.Message = "Employee Name  Already Exist";
+                 modpop.ShowPopUp();
+
+             }
+             else
+             {
+
+
+
+                 JDMasterTB mtb = new JDMasterTB();
+                 mtb.EmpID = Convert.ToInt32(ddlemplyeename.SelectedValue);
+                 // mtb.DocDesc = FCKeditor1.Value;
+                 //  mtb.DocDesc = "<div class='fckbullet'>" + FCKeditor1.Value + "</div>";
+                // mtb.JobDesc = HTMLToString(FCKeditor1.Value).ToString();
+                  mtb.JobDesc = (FCKeditor1.Value).ToString();
+
+
+                 mtb.Status = rd_status.SelectedIndex;
+               
+                 HR.JDMasterTBs.InsertOnSubmit(mtb);
+                 HR.SubmitChanges();
+
+
+                 modpop.Message = "Submitted Successfully";
+                 modpop.ShowPopUp();
+                 
+                 BindAllData();
+                 Clear();
+             }
+        }
+        else
+        {
+           // LoadDoc();
+            JDMasterTB mtb = HR.JDMasterTBs.Where(d => d.JDId == Convert.ToInt32(lblJDid.Text)).First();
+            mtb.EmpID = Convert.ToInt32(ddlemplyeename.SelectedValue);
+            // mtb.DocDesc = FCKeditor1.Value;
+            //  mtb.DocDesc = "<div class='fckbullet'>" + FCKeditor1.Value + "</div>";
+            mtb.JobDesc = (FCKeditor1.Value).ToString();
+            //   mtb.DocDesc = (FCKeditor1.Value).ToString();
+
+
+            mtb.Status = rd_status.SelectedIndex;
+            // Sn.ServiceTBs.InsertOnSubmit(mt);
+            HR.SubmitChanges();
+
+            // g.ShowMessage(this.Page, "Updated Successfully");
+
+            modpop.Message = "Updated Successfully";
+            modpop.ShowPopUp();
+            btnsubmit.Text = "Save";
+            Clear();
+            BindAllData();
+        }
+    }
+    private void Clear()
+    {
+        lblJDid.Text = "";
+      
+        FCKeditor1.Value = "";
+        ddlemplyeename.SelectedIndex = -1;
+        MultiView1.ActiveViewIndex = 0;
+        btnsubmit.Text = "Save";
+    }
+    protected void Edit_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 1;
+        LinkButton Lnk = (LinkButton)sender;
+        string JDID = Lnk.CommandArgument;
+        lblJDid.Text = JDID;
+
+        //int deptid = lbldeptid.Text;
+        JDMasterTB mt = HR.JDMasterTBs.Where(d => d.JDId == Convert.ToInt32(lblJDid.Text)).First();
+        //  FCKeditor1.Value=  HTMLToString(mt.DocDesc).ToString();
+        FCKeditor1.Value = mt.JobDesc;
+       // lblDocumentPath.Text = mt.DocumentName;
+        ddlemplyeename.SelectedValue = (mt.EmpID).ToString();
+        rd_status.SelectedIndex = Convert.ToInt32(mt.Status);
+        btnsubmit.Text = "Update";
+    }
+    protected void btnadd_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 1;
+        bool Status = g.CheckAdmin(Convert.ToInt32(Session["UserId"]));
+        // Check super Admin condition
+        if (Status == true)
+        {
+
+            ddlemplyeename.Enabled = true;
+        }
+        else
+        {
+
+            ddlemplyeename.SelectedValue = Convert.ToString(Session["UserId"]);
+            ddlemplyeename.Enabled = false;
+        }
+    }
+    protected void btncancel_Click(object sender, EventArgs e)
+    {
+        Clear();
+    }
+    protected void grd_JD_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grd_JD.PageIndex = e.NewPageIndex;
+        BindAllData();
+        grd_JD.DataBind();
+    }
+}

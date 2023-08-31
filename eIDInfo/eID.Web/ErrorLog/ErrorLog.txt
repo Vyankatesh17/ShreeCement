@@ -1,0 +1,15 @@
+start
+Select query
+Select query
+start
+Select query
+Select query
+start  ProcessSalaryPreview
+Select query for Employee
+Employee List
+For loop start 
+For loop -Amol  Ananda Patil
+Start Update Queary
+End Update Queary
+start Select Queary for Gridview
+End Select Queary for Gridview

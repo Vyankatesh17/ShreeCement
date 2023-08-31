@@ -1,0 +1,154 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Interview : System.Web.UI.Page
+{
+    //Interview Details
+    //Created By Manasi
+    //13 Oct 2014
+
+    HrPortalDtaClassDataContext HR = new HrPortalDtaClassDataContext();
+    Genreal g = new Genreal();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (Session["UserId"] != null)
+        {
+            if (!IsPostBack)
+            {
+                currDate.Text = g.GetCurrentDateTime().ToShortDateString();
+                //lblDate.Text = g.GetCurrentDateTime().ToShortDateString();
+                MultiView1.ActiveViewIndex = 0;
+               
+                BindAllData();
+            }
+        }
+        else
+        {
+            Response.Redirect("login.aspx");
+        }
+    }
+   
+   
+    public void BindAllData()
+    {
+        var deptData = from d in HR.InterviewTBs
+                       join dtt in HR.MasterDeptTBs on d.DeptID equals dtt.DeptID
+                       join dtDes in HR.MasterDesgTBs on d.positionDesignationID equals dtDes.DesigID
+                       select new { d.CandidateName,d.Mobile, d.InterviewDate, d.InterviewerID, dtDes.DesigName,
+                           dtt.DeptName, dtt.CompanyInfoTB.CompanyName,d.Status };
+        if (deptData.Count() > 0)
+        {
+            grd_Interview.DataSource = deptData;
+            grd_Interview.DataBind();
+            lblcnt.Text = deptData.Count().ToString();
+        }
+        else
+        {
+            grd_Interview.DataSource = deptData;
+            grd_Interview.DataBind();
+            lblcnt.Text = "0";
+        }
+    }
+   
+  
+   
+    protected void grd_Interview_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grd_Interview.PageIndex = e.NewPageIndex;
+        BindAllData();
+        grd_Interview.DataBind();
+    }
+  
+    protected void ddlStatus_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ddlStatus.SelectedIndex == 3)
+        {//Inprocess
+
+            txtDate.Text = "";
+            trStatus.Visible = true;
+        }
+        else
+        {//Other
+           // reqDate.Enabled = false;
+            trStatus.Visible = false;
+        }
+       
+        modpops.Show();
+    }
+    protected void btnselect_Click(object sender, ImageClickEventArgs e)
+    {
+        modpops.Show();
+        ImageButton Lnk = (ImageButton)sender;
+        string interviewid = Lnk.CommandArgument;
+       
+        hdFd.Value = interviewid;
+        MultiView1.ActiveViewIndex = 0;
+    }
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        InterviewTB MTB = HR.InterviewTBs.Where(d => d.InterviewerID == Convert.ToInt32(hdFd.Value)).First();
+        MTB.Status = ddlStatus.SelectedItem.Text;
+        InterviewDetailsTB inter = new InterviewDetailsTB();
+        inter.InterviewBy = txtInterBy.Text;
+        if (trStatus.Visible)
+	    {
+            inter.NextDate =Convert.ToDateTime(txtDate.Text); 
+	    }
+        inter.Status = txtRemarks.Text;
+        inter.Remarks = ddlStatus.SelectedItem.Text;
+        inter.InterViewID = Convert.ToInt32(hdFd.Value);
+        HR.InterviewDetailsTBs.InsertOnSubmit(inter);
+        HR.SubmitChanges();
+        modpop.Message = "Submitted Successfully";
+        modpop.ShowPopUp();
+        ClearDetails();
+        BindAllData();
+    }
+
+    private void ClearDetails()
+    {
+        txtRemarks.Text = "";
+        ddlStatus.SelectedIndex = 0;
+        txtDate.Text = "";
+        txtInterBy.Text = "";
+        lblERROR.Visible = false;
+        MultiView1.ActiveViewIndex = 0;
+        
+    }
+    protected void Button1_Click(object sender, EventArgs e)
+    {
+        ClearDetails();
+    }
+    protected void imgclose_Click(object sender, ImageClickEventArgs e)
+    {
+        modpops.Hide();
+    }
+    protected void txtDate_TextChanged(object sender, EventArgs e)
+    {
+        if (txtDate.Text!="" && trStatus.Visible)
+        {
+            DateTime dd = DateTime.Now.Date;
+            DateTime dd1 = Convert.ToDateTime(txtDate.Text);
+
+            if (Convert.ToDateTime(dd1.ToShortDateString()) <Convert.ToDateTime(dd.ToShortDateString()))
+            {
+                lblERROR.Visible = true;
+                lblERROR.Text = "Select Next Date";
+                btnSave.Enabled = false;
+                txtDate.Text = dd.ToShortDateString();
+                modpops.Show();
+
+            }
+            else
+            {
+                lblERROR.Visible=false;
+                btnSave.Enabled = true;
+            }
+        }
+        modpops.Show();
+    }
+}

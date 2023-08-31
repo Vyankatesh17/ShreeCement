@@ -1,0 +1,294 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Recruitment_InterViewReportPiChart : System.Web.UI.Page
+{
+    /// <summary>
+    /// Interview report In PiChart Form
+    /// Created By Abdul Rahman
+    /// Created Date : 05/12/2014
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    /// 
+
+    #region variable declearation
+    Genreal g = new Genreal();
+    int year = 0;
+    DataTable dtviewcount = new DataTable();
+    HrPortalDtaClassDataContext HR = new HrPortalDtaClassDataContext();
+    #endregion
+
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (Session["UserId"] != null)
+        {
+            if (!IsPostBack)
+            {
+
+                fillddl();
+                bindPieChart();
+            }
+        }
+        else
+        {
+            Response.Redirect("Login.aspx");
+        }
+    }
+
+    private void fillddl()
+    {
+        ddmonth.Items.FindByValue(Convert.ToString(DateTime.Now.Month)).Selected = true;
+        year = DateTime.Now.Year;
+        ddyear.SelectedIndex = -1;
+        ddyear.Items.FindByValue(System.DateTime.Now.Year.ToString()).Selected = true;
+    }
+
+    private void bindPieChart()
+    {
+        DataTable dtviewcount = null;
+        ViewState["dtviewcount"] = null;
+        DataTable dtfetchCandId = g.ReturnData("Select n.CandidateId, sc.ScheduleId, sc.Date AS ScheduleDate from InterviewResultTB n Left outer join ScheduleTB sc on n.ScheduleId=sc.ScheduleId Where DATEPART(YYYY,sc.Date)='" + ddyear.SelectedValue + "' and MoNTH(sc.Date) ='" + ddmonth.SelectedValue + "'");
+        if (dtfetchCandId.Rows.Count > 0)
+        {
+            for (int i = 0; i < dtfetchCandId.Rows.Count; i++)
+            {
+                DataTable dtrefrenceby = g.ReturnData("Select Refrence_By, EmployeeID, AgencyId from CandidateTB Where Candidate_ID='"+Convert.ToInt32(dtfetchCandId.Rows[i]["CandidateId"].ToString())+"'");
+                //for (int j = 0; j < dtrefrenceby.Rows.Count; j++)
+                //{
+                    
+                if (dtrefrenceby.Rows[0]["Refrence_By"].ToString() == "Agency")
+                {
+                    #region code for Agency reference
+                    DataTable dtagency = g.ReturnData("select distinct 'Agency' Generatedby,A.AgencyName,(select count(SD.VacancyId) from ScheduleDetailsTB SD where SD.VacancyId=ITB.VacancyId and SD.CandidateID=ITB.CandidateID ) as ScheduleCnt,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Selected' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID ) as Selected,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Rejected' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID) as Rejected,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Hold' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID ) as Hold from InterviewResultTB ITB  left outer join VancancyTB on ITB.VacancyId=VancancyTB.VacancyID  left outer join ScheduleTB SC on ITB.ScheduleId=SC.ScheduleId Left outer join CompanyInfoTB CT on ITB.CompanyID=CT.CompanyId  Left outer join CandidateTB C  on ITB.CandidateId=C.Candidate_ID left outer join AgencyMasterTB A on C.AgencyId=A.AgencyId where C.AgencyId  is not null And ITB.CandidateId='" + Convert.ToInt32(dtfetchCandId.Rows[i]["CandidateId"].ToString()) + "' order by A.AgencyName");
+                   
+                    if (ViewState["dtviewcount"] != null)
+                    {
+                        dtviewcount = (DataTable)ViewState["dtviewcount"];
+                    }
+                    else
+                    {
+                        dtviewcount = new DataTable();
+                        DataColumn Generatedby = dtviewcount.Columns.Add("Generatedby");
+                        DataColumn ScheduleCnt = dtviewcount.Columns.Add("ScheduleCnt");
+                        DataColumn Selected = dtviewcount.Columns.Add("Selected");
+                        DataColumn Rejected = dtviewcount.Columns.Add("Rejected");
+                        DataColumn Hold = dtviewcount.Columns.Add("Hold");
+                       
+                    }
+                    DataRow dr = dtviewcount.NewRow();
+                    dr[0] = dtagency.Rows[0]["Generatedby"].ToString();
+                    dr[1] = dtagency.Rows[0]["ScheduleCnt"].ToString();
+                    dr[2] = dtagency.Rows[0]["Selected"].ToString();
+                    dr[3] = dtagency.Rows[0]["Rejected"].ToString();
+                    dr[4] = dtagency.Rows[0]["Hold"].ToString();
+                    if (dtviewcount.Rows.Count > 0)
+                    {
+                        for (int f = 0; f < dtviewcount.Rows.Count; f++)
+                        {
+
+                            string u2 = dtviewcount.Rows[f][0].ToString();
+                            if (u2 == dtagency.Rows[0]["Generatedby"].ToString())
+                            {
+                               
+                               
+                                dr[0] = dtagency.Rows[0]["Generatedby"].ToString();
+                                dr[1] = Convert.ToInt32(dtagency.Rows[0]["ScheduleCnt"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][1].ToString());
+                                dr[2] = Convert.ToInt32(dtagency.Rows[0]["Selected"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][2].ToString());
+                                dr[3] = Convert.ToInt32(dtagency.Rows[0]["Rejected"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][3].ToString());
+                                dr[4] = Convert.ToInt32(dtagency.Rows[0]["Hold"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][4].ToString());
+                                dtviewcount.Rows[f].Delete();
+                            }
+                        }
+
+                            dtviewcount.Rows.Add(dr);
+
+                       
+                    }
+                    else
+                    {
+                        dtviewcount.Rows.Add(dr);
+
+                    }
+                    ViewState["dtviewcount"] = dtviewcount;
+                  #endregion
+
+                }
+                if (dtrefrenceby.Rows[0]["Refrence_By"].ToString() == "Employee")
+                {
+                    #region code for Employee reference
+                    DataTable dtEmp = g.ReturnData("select distinct 'Employee' Generatedby,E.Fname+' '+E.Lname as EmpName,(select count(SD.VacancyId) from ScheduleDetailsTB SD where SD.VacancyId=ITB.VacancyId and SD.CandidateID=ITB.CandidateID ) as ScheduleCnt,(select count(IT.VacancyId) from InterviewResultTB IT where (InterviewStatus='Selected' OR InterviewStatus='Offer' Or InterviewStatus='Join') and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID ) as Selected,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Rejected' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID) as Rejected,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Hold' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID ) as Hold from InterviewResultTB ITB  left outer join VancancyTB on ITB.VacancyId=VancancyTB.VacancyID  left outer join ScheduleTB SC on ITB.ScheduleId=SC.ScheduleId Left outer join CompanyInfoTB CT on ITB.CompanyID=CT.CompanyId  Left outer join CandidateTB C  on ITB.CandidateId=C.Candidate_ID left outer join EmployeeTB E on C.EmployeeID=E.EmployeeId where C.EmployeeID  is not null and ITB.CandidateId='" + Convert.ToInt32(dtfetchCandId.Rows[i]["CandidateId"].ToString()) + "' ");
+
+                    int cnt2 = 0;
+                    if (ViewState["dtviewcount"] != null)
+                    {
+                        dtviewcount = (DataTable)ViewState["dtviewcount"];
+                    }
+                    else
+                    {
+                        dtviewcount = new DataTable();
+                        DataColumn Generatedby = dtviewcount.Columns.Add("Generatedby");
+                        DataColumn ScheduleCnt = dtviewcount.Columns.Add("ScheduleCnt");
+                        DataColumn Selected = dtviewcount.Columns.Add("Selected");
+                        DataColumn Rejected = dtviewcount.Columns.Add("Rejected");
+                        DataColumn Hold = dtviewcount.Columns.Add("Hold");
+
+                    }
+                    DataRow dr = dtviewcount.NewRow();
+                    dr[0] = dtEmp.Rows[0]["Generatedby"].ToString();
+                    dr[1] = dtEmp.Rows[0]["ScheduleCnt"].ToString();
+                    dr[2] = dtEmp.Rows[0]["Selected"].ToString();
+                    dr[3] = dtEmp.Rows[0]["Rejected"].ToString();
+                    dr[4] = dtEmp.Rows[0]["Hold"].ToString();
+                    if (dtviewcount.Rows.Count > 0)
+                    {
+                        for (int f = 0; f < dtviewcount.Rows.Count; f++)
+                        {
+
+                            string u2 = dtviewcount.Rows[f][0].ToString();
+                            if (u2 == dtEmp.Rows[0]["Generatedby"].ToString())
+                            {
+                                dr[0] = dtEmp.Rows[0]["Generatedby"].ToString();
+                                dr[1] = Convert.ToInt32(dtEmp.Rows[0]["ScheduleCnt"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][1].ToString());
+                                dr[2] = Convert.ToInt32(dtEmp.Rows[0]["Selected"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][2].ToString());
+                                dr[3] = Convert.ToInt32(dtEmp.Rows[0]["Rejected"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][3].ToString());
+                                dr[4] = Convert.ToInt32(dtEmp.Rows[0]["Hold"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][4].ToString());
+                                dtviewcount.Rows[f].Delete();
+
+                            }
+                        }
+
+                       
+                            dtviewcount.Rows.Add(dr);
+
+                    }
+                    else
+                    {
+                        dtviewcount.Rows.Add(dr);
+
+                    }
+                    ViewState["dtviewcount"] = dtviewcount;
+                    #endregion
+                }
+                if (dtrefrenceby.Rows[0]["Refrence_By"].ToString() == "--Select--")
+                {
+                    #region code for company reference
+                    DataTable dtcompany = g.ReturnData("select distinct 'Company' Generatedby, CT.CompanyName,(select count(SD.VacancyId) from ScheduleDetailsTB SD where SD.VacancyId=ITB.VacancyId and SD.CandidateID=ITB.CandidateID ) as ScheduleCnt,(select count(IT.VacancyId) from InterviewResultTB IT where (InterviewStatus='Selected' OR InterviewStatus='Offer' Or InterviewStatus='Join') and IT.VacancyId=ITB.VacancyId and IT.CandidateId=ITB.CandidateID) as Selected,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Rejected' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID) as Rejected,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Hold' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID) as Hold from InterviewResultTB ITB left outer join VancancyTB on ITB.VacancyId=VancancyTB.VacancyID left outer join ScheduleTB SC on ITB.ScheduleId=SC.ScheduleId Left outer join CompanyInfoTB CT on ITB.CompanyID=CT.CompanyId where ITB.CandidateId='" + Convert.ToInt32(dtfetchCandId.Rows[i]["CandidateId"].ToString()) + "'");
+
+                    int cnt3 = 0;
+                    if (ViewState["dtviewcount"] != null)
+                    {
+                        dtviewcount = (DataTable)ViewState["dtviewcount"];
+                    }
+                    else
+                    {
+                        dtviewcount = new DataTable();
+                        DataColumn Generatedby = dtviewcount.Columns.Add("Generatedby");
+                        DataColumn ScheduleCnt = dtviewcount.Columns.Add("ScheduleCnt");
+                        DataColumn Selected = dtviewcount.Columns.Add("Selected");
+                        DataColumn Rejected = dtviewcount.Columns.Add("Rejected");
+                        DataColumn Hold = dtviewcount.Columns.Add("Hold");
+
+                    }
+                    DataRow dr = dtviewcount.NewRow();
+                    dr[0] = dtcompany.Rows[0]["Generatedby"].ToString();
+                    dr[1] = dtcompany.Rows[0]["ScheduleCnt"].ToString();
+                    dr[2] = dtcompany.Rows[0]["Selected"].ToString();
+                    dr[3] = dtcompany.Rows[0]["Rejected"].ToString();
+                    dr[4] = dtcompany.Rows[0]["Hold"].ToString();
+                    if (dtviewcount.Rows.Count > 0)
+                    {
+                        for (int f = 0; f < dtviewcount.Rows.Count; f++)
+                        {
+
+                            string u2 = dtviewcount.Rows[f][0].ToString();
+                            if (u2 == dtcompany.Rows[0]["Generatedby"].ToString())
+                            {
+                                dr[0] = dtcompany.Rows[0]["Generatedby"].ToString();
+                                dr[1] = Convert.ToInt32(dtcompany.Rows[0]["ScheduleCnt"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][1].ToString());
+                                dr[2] = Convert.ToInt32(dtcompany.Rows[0]["Selected"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][2].ToString());
+                                dr[3] = Convert.ToInt32(dtcompany.Rows[0]["Rejected"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][3].ToString());
+                                dr[4] = Convert.ToInt32(dtcompany.Rows[0]["Hold"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][4].ToString());
+                                dtviewcount.Rows[f].Delete();
+
+                            }
+                        }
+
+                       
+                            dtviewcount.Rows.Add(dr);
+
+                    }
+                    else
+                    {
+                        dtviewcount.Rows.Add(dr);
+
+                    }
+                    ViewState["dtviewcount"] = dtviewcount;
+                    #endregion
+                }
+                
+            
+             }
+           
+            if (ViewState["dtviewcount"]!=null)
+            {
+                dtviewcount = (DataTable)ViewState["dtviewcount"];
+
+                Chart1.Series["Series1"].XValueMember = "Generatedby";
+                Chart1.Series["Series1"].YValueMembers = "ScheduleCnt";
+
+
+                Chart1.Series["Series2"].YValueMembers = "Selected";
+                Chart1.Series["Series3"].YValueMembers = "Rejected";
+                Chart1.Series["Series3"].SmartLabelStyle.Enabled = false;
+                Chart1.Series["Series4"].YValueMembers = "Hold";
+
+              Chart1.Series["Series1"].SmartLabelStyle.Enabled = false;
+               Chart1.Series["Series2"].SmartLabelStyle.Enabled = false;
+               
+                Chart1.Series["Series4"].SmartLabelStyle.Enabled = false;
+
+                Chart1.ChartAreas[0].AxisX.MajorGrid.Enabled = false;
+                Chart1.ChartAreas[0].AxisY.MajorGrid.Enabled = false;
+                Chart1.DataSource = dtviewcount;
+                Chart1.DataBind();
+            }
+            else
+            {
+                Chart1.DataSource = null;
+                Chart1.DataBind();
+                g.ShowMessage(this.Page,"There is no Data");
+            }
+        }
+
+        
+    
+    }
+
+
+    protected void ddmonth_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ddmonth.SelectedIndex > 0)
+        {
+            bindPieChart();
+        }
+        else
+        {
+            
+        }
+    }
+    protected void ddyear_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ddyear.SelectedIndex > 0)
+        {
+            bindPieChart();
+        }
+        
+    }
+}

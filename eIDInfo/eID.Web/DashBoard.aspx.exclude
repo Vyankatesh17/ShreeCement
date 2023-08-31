@@ -1,0 +1,1018 @@
+﻿<%@ Page Title="Dashboard" Language="C#" MasterPageFile="~/UserMaster.master" AutoEventWireup="true"
+    CodeFile="DashBoard.aspx.cs" Inherits="HomePage" EnableEventValidation="false" %>
+
+
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
+<%--<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cc1" %>--%>
+<asp:Content ID="Content1" ContentPlaceHolderID="Head" runat="Server">
+    <style type="text/css">
+        .panalstyle {
+            width: 250px;
+            height: 150px;
+            background-color: White;
+            border: 2px solid Black;
+            border-radius: 10px;
+            box-shadow: 12px 0 12px 0;
+        }
+
+        .fontStyle {
+            font-size: 13px;
+            font-weight: bold;
+            font-family: Verdana;
+            height: 20px;
+            color: #970676;
+            text-shadow: 1px 1px 1px #6D6F71;
+            text-decoration: underline;
+        }
+
+        .countvalue {
+            color: Black;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .forimage {
+            border: 2px solid Black;
+        }
+
+        .headerFontStyle {
+            font-size: 14px;
+            font-weight: bold;
+            font-family: Verdana;
+            height: 20px;
+            border-radius: 10px;
+            color: White;
+            background-color: #6D6F71;
+            text-shadow: 1px 1px 1px #000;
+        }
+
+        .Panalpopup {
+            border: 2px solid Black;
+            border-radius: 10px;
+            background-color: White;
+            height: 350px;
+        }
+
+
+        #Progress {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            text-align: center;
+            background-color: #c4f0f1;
+            border-radius: 25px;
+            box-shadow: 0px 1px 15px #092137;
+            z-index: 99999;
+        }
+
+        /* left div, right div,   max-width:48%;*/
+        .d-lft {
+            width: 47%;
+            height: auto;
+            float: left; /* padding-right:17px;*/
+            font-size: 13pt;
+            font-family: Arial Narrow;
+        }
+
+
+        .d-rht {
+            width: 46%;
+            height: auto;
+            float: right; /* padding-left:20px;*/
+        }
+    </style>
+    <script type="text/javascript">
+
+        function activateTab(pageId) {
+            // alert('hiii'+pageId);
+            var tabCtrl = document.getElementById('tabCtrl');
+            var pageToActivate = document.getElementById(pageId);
+            for (var i = 0; i < tabCtrl.childNodes.length; i++) {
+                var node = tabCtrl.childNodes[i];
+                if (node.nodeType == 1) { /* Element */
+                    node.style.display = (node == pageToActivate) ? 'block' : 'none';
+                }
+            }
+        }
+    </script>
+
+
+
+
+
+    <script type="text/javascript">
+
+        function ImportingDone(tabID) {
+
+            var id = "li" + tabID;
+            // alert(id);
+            one = 'active';
+            two = '';
+            $("#li1").removeClass("active");
+            $("#" + id).addClass("active");
+            $("#dashboard1").removeClass("active");
+            $("#dashboard" + tabID).addClass("active");
+
+
+            //document.getElementById(id).parent.style
+        }
+    </script>
+    <script lang="javascript" type="text/javascript">
+
+
+
+        function setTabSelected(tabIndex) {
+            // alert(tabIndex);
+        }
+        function tabChanged(tabIndex) {
+            //  alert(tabIndex);
+            document.getElementById("<%=activeTab.ClientID%>").value = tabIndex;
+            document.getElementById("<%=datepicker.ClientID%>").value = tabIndex;
+            //  alert(document.getElementById("<%= activeTab.ClientID %>").value);            
+        }
+    </script>
+
+
+
+    <link href="../css/tabs.css" rel="stylesheet" />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <%--<link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">--%>
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <asp:UpdatePanel runat="server" ID="upp">
+        <ContentTemplate>
+
+            <input type="text" id="datepicker" runat="server" name="datepicker" visible="false" />
+            <asp:HiddenField ID="activeTab" runat="server" />
+            <button id="btnGetActiveTab" runat="server" visible="false"></button>
+            <asp:Button ID="btnHiddenClick" runat="server" Text="Bind Data" OnClick="btnHiddenClick_Click" style="display:none;" />
+            <div id="tabs">
+                <ul class="nav nav-tabs">
+                    <li id="li1" class="active"><a href="#dashboard1" data-toggle="tab" onclick="javascript:tabChanged(1);">Dashboard 1</a></li>
+                    <li id="li2"><a href="#dashboard2" data-toggle="tab" onclick="javascript:tabChanged(2);">Dashboard 2</a></li>
+                    <li id="li3"><a href="#dashboard3" data-toggle="tab" onclick="javascript:tabChanged(3);">Dashboard 3</a></li>
+                    <li id="li4"><a href="#dashboard4" data-toggle="tab" onclick="javascript:tabChanged(4);">Dashboard 4</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="row clearfix"></div>
+                    <div class="row clearfix"></div>
+                    <div class="row clearfix"></div>
+
+                    <div class="tab-pane active" id="dashboard1">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h3 class="box-title">Today's 6th Month Completed List</h3>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel1" runat="server" >
+                                                                <asp:GridView ID="grd6month" runat="server" AutoGenerateColumns="False"
+                                                                    CssClass="table table-bordered table-striped">
+                                                                    <Columns>
+                                                                        <asp:TemplateField HeaderText="Sr.No">
+                                                                            <ItemTemplate>
+                                                                                <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno" />
+                                                                            </ItemTemplate>
+                                                                        </asp:TemplateField>
+                                                                        <asp:BoundField DataField="EmployeeName" HeaderText="Employee Name" />
+                                                                        <asp:BoundField DataField="DeptName" HeaderText="Department" />
+                                                                        <asp:BoundField DataField="DOJ" HeaderText="Joining Date" DataFormatString="{0:MM/dd/yyyy}" />
+                                                                    </Columns>
+                                                                    <EmptyDataTemplate>
+                                                                        No Data Exists!!!!
+                                                                    </EmptyDataTemplate>
+                                                                </asp:GridView>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h3 class="box-title">Will Complete 6 Month In Current Month</h3>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel2" runat="server" >
+                                                                <asp:GridView ID="grd6MonthCurrentmonth" runat="server" AutoGenerateColumns="False" CssClass="table table-bordered table-striped" HeaderStyle-BackColor="#3c8dbc">
+                                                                    <Columns>
+                                                                        <asp:TemplateField HeaderText="Sr.No">
+                                                                            <ItemTemplate>
+                                                                                <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno" />
+                                                                            </ItemTemplate>
+                                                                        </asp:TemplateField>
+                                                                        <asp:BoundField DataField="EmployeeName" HeaderText="Employee Name" />
+                                                                        <asp:BoundField DataField="DeptName" HeaderText="Department" />
+                                                                        <asp:BoundField DataField="DOJ" HeaderText="Joining Date" DataFormatString="{0:MM/dd/yyyy}" />
+                                                                    </Columns>
+                                                                    <EmptyDataTemplate>
+                                                                        No Data Exists!!!!
+                                                                    </EmptyDataTemplate>
+                                                                </asp:GridView>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h3 class="box-title">Today's 1 Year Completed List</h3>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel3" runat="server" >
+                                                                <asp:GridView ID="grd1year" runat="server" AutoGenerateColumns="False"
+                                                                    CssClass="table table-bordered table-striped">
+                                                                    <Columns>
+                                                                        <asp:TemplateField HeaderText="Sr.No">
+                                                                            <ItemTemplate>
+                                                                                <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno" />
+                                                                            </ItemTemplate>
+                                                                        </asp:TemplateField>
+                                                                        <asp:BoundField DataField="EmployeeName" HeaderText="Employee Name" />
+                                                                        <asp:BoundField DataField="DeptName" HeaderText="Department" />
+                                                                        <asp:BoundField DataField="DOJ" HeaderText="Joining Date" DataFormatString="{0:MM/dd/yyyy}" />
+                                                                    </Columns>
+                                                                    <EmptyDataTemplate>
+                                                                        No Data Exists!!!!
+                                                                    </EmptyDataTemplate>
+                                                                </asp:GridView>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h3 class="box-title">Will Complete 1 year In Current Month</h3>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel4" runat="server" >
+                                                                <asp:GridView ID="grd1yearcurrentMonth" runat="server" AutoGenerateColumns="False" CssClass="table table-bordered table-striped">
+                                                                    <Columns>
+                                                                        <asp:TemplateField HeaderText="Sr.No">
+                                                                            <ItemTemplate>
+                                                                                <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno" />
+                                                                            </ItemTemplate>
+                                                                        </asp:TemplateField>
+                                                                        <asp:BoundField DataField="EmployeeName" HeaderText="Employee Name" />
+                                                                        <asp:BoundField DataField="DeptName" HeaderText="Department" />
+                                                                        <asp:BoundField DataField="DOJ" HeaderText="Joining Date" DataFormatString="{0:MM/dd/yyyy}" />
+                                                                    </Columns>
+                                                                    <EmptyDataTemplate>
+                                                                        No Data Exists!!!!
+                                                                    </EmptyDataTemplate>
+                                                                    <HeaderStyle BorderColor="#0066FF" />
+                                                                </asp:GridView>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h3 class="box-title">Today's Birthday List</h3>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel9" runat="server" >
+                                                                <asp:GridView ID="grdbirthtodaysbirth" runat="server" AutoGenerateColumns="False" CssClass="table table-bordered table-striped">
+                                                                    <Columns>
+                                                                        <asp:TemplateField HeaderText="Sr.No">
+                                                                            <ItemTemplate>
+                                                                                <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno1" />
+                                                                            </ItemTemplate>
+                                                                        </asp:TemplateField>
+                                                                        <asp:BoundField DataField="EmployeeName" HeaderText="Employee Name" />
+                                                                        <asp:BoundField DataField="DeptName" HeaderText="Department" />
+                                                                        <asp:BoundField DataField="BirthDate" HeaderText="Birth Date" DataFormatString="{0:MM/dd/yyyy}" />
+                                                                    </Columns>
+                                                                    <EmptyDataTemplate>
+                                                                        No Data Exists!!!!
+                                                                    </EmptyDataTemplate>
+                                                                </asp:GridView>
+
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h3 class="box-title">Current Month Birthday List</h3>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel10" runat="server" >
+                                                                <asp:GridView ID="grdbirththismonth" runat="server" AutoGenerateColumns="False"
+                                                                    CssClass="table table-bordered table-striped">
+                                                                    <Columns>
+                                                                        <asp:TemplateField HeaderText="Sr.No">
+                                                                            <ItemTemplate>
+                                                                                <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno1" />
+                                                                            </ItemTemplate>
+                                                                        </asp:TemplateField>
+                                                                        <asp:BoundField DataField="EmployeeName" HeaderText="Employee Name" />
+                                                                        <asp:BoundField DataField="DeptName" HeaderText="Department" />
+                                                                        <asp:BoundField DataField="BirthDate" HeaderText="Birth Date" DataFormatString="{0:MM/dd/yyyy}" />
+                                                                    </Columns>
+                                                                    <EmptyDataTemplate>
+                                                                        No Data Exists!!!!
+                                                                    </EmptyDataTemplate>
+                                                                </asp:GridView>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h3 class="box-title">Passport Expiry List</h3>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel7"  runat="server" Height="500px" Width="500px">
+                                                                <h4>This Month</h4>
+                                                                <table width="100%">
+                                                                    <tr>
+                                                                        <td valign="Top">Month 
+                                                            <asp:DropDownList ID="ddmonth" runat="server" Width="120px" ValidationGroup="a" CssClass="form-control" AutoPostBack="True" OnSelectedIndexChanged="ddmonth_SelectedIndexChanged">
+                                                                <asp:ListItem>--Select--</asp:ListItem>
+                                                                <asp:ListItem Value="1">January</asp:ListItem>
+                                                                <asp:ListItem Value="2">February</asp:ListItem>
+                                                                <asp:ListItem Value="3">March</asp:ListItem>
+                                                                <asp:ListItem Value="4">April</asp:ListItem>
+                                                                <asp:ListItem Value="5">May</asp:ListItem>
+                                                                <asp:ListItem Value="6">June</asp:ListItem>
+                                                                <asp:ListItem Value="7">July</asp:ListItem>
+                                                                <asp:ListItem Value="8">August</asp:ListItem>
+                                                                <asp:ListItem Value="9">September</asp:ListItem>
+                                                                <asp:ListItem Value="10">October</asp:ListItem>
+                                                                <asp:ListItem Value="11">November</asp:ListItem>
+                                                                <asp:ListItem Value="12">December</asp:ListItem>
+                                                            </asp:DropDownList>
+                                                                        </td>
+                                                                        <td valign="Top">Year
+                                                            <asp:DropDownList ID="ddyearPassport" runat="server"  CssClass="form-control" AutoPostBack="True" OnSelectedIndexChanged="ddyearPassport_SelectedIndexChanged">
+                                                                <asp:ListItem>--Select--</asp:ListItem>
+                                                                <asp:ListItem Value="2013">2013</asp:ListItem>
+                                                                <asp:ListItem Value="2014">2014</asp:ListItem>
+                                                                <asp:ListItem Value="2015">2015</asp:ListItem>
+                                                                <asp:ListItem Value="2016">2016</asp:ListItem>
+                                                                <asp:ListItem Value="2017">2017</asp:ListItem>
+                                                                <asp:ListItem Value="2018">2018</asp:ListItem>
+                                                                <asp:ListItem Value="2019">2019</asp:ListItem>
+                                                                <asp:ListItem Value="2020">2020</asp:ListItem>
+                                                                <asp:ListItem Value="2021">2021</asp:ListItem>
+                                                                <asp:ListItem Value="2022">2022</asp:ListItem>
+                                                                <asp:ListItem Value="2023">2023</asp:ListItem>
+                                                                <asp:ListItem Value="2024">2024</asp:ListItem>
+                                                                <asp:ListItem Value="2025">2025</asp:ListItem>
+                                                                <asp:ListItem Value="2026">2026</asp:ListItem>
+                                                                <asp:ListItem Value="2027">2027</asp:ListItem>
+                                                                <asp:ListItem Value="2028">2028</asp:ListItem>
+                                                                <asp:ListItem Value="2029">2029</asp:ListItem>
+                                                                <asp:ListItem Value="2030">2030</asp:ListItem>
+                                                            </asp:DropDownList>
+                                                                        </td>
+                                                                        <td valign="bottom" style="display: none">
+                                                                            <asp:Button ID="btnpassportPrint" runat="server" CssClass="btn bg-blue-active" Text="Print" OnClick="btnpassportPrint_Click" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td colspan="3">&nbsp;
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td colspan="3">
+                                                                            <asp:GridView ID="Grd_Password_Listthismonth" runat="server" AutoGenerateColumns="False" PageSize="5"
+                                                                                AllowPaging="True" CssClass="table table-bordered table-striped" Width="100%" Caption="Passport Expiry List"
+                                                                                OnPageIndexChanging="Grd_Password_Listthismonth_PageIndexChanging">
+                                                                                <Columns>
+                                                                                    <asp:TemplateField HeaderText="Sr.No">
+                                                                                        <ItemTemplate>
+                                                                                            <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno1" />
+                                                                                        </ItemTemplate>
+                                                                                    </asp:TemplateField>
+                                                                                    <asp:BoundField DataField="EmployeeId" HeaderText="EmployeeId" Visible="False" />
+                                                                                    <asp:BoundField DataField="EmployeeName" HeaderText="Employee Name" />
+                                                                                    <asp:BoundField DataField="PassportExpiryDate" HeaderText="Passport Expiry Date"
+                                                                                        DataFormatString="{0:MM/dd/yyyy}" />
+                                                                                    <asp:BoundField DataField="PassportNo" HeaderText="Passport No" />
+                                                                                </Columns>
+                                                                                <EmptyDataTemplate>
+                                                                                    No Data Exists!!!!
+                                                                                </EmptyDataTemplate>
+                                                                            </asp:GridView>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                                <hr />
+                                                                <div class="box-header" style="cursor: move;">
+                                                                    <i class="fa fa-eye"></i>
+                                                                    <h4>Today</h4>
+                                                                </div>
+                                                                <asp:GridView ID="Grd_Password_Listtodays" runat="server" AutoGenerateColumns="False"
+                                                                    PageSize="5" AllowPaging="True" CssClass="table table-bordered table-striped" OnPageIndexChanging="Grd_Password_Listtodays_PageIndexChanging">
+                                                                    <Columns>
+                                                                        <asp:TemplateField HeaderText="Sr.No">
+                                                                            <ItemTemplate>
+                                                                                <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno1" />
+                                                                            </ItemTemplate>
+                                                                        </asp:TemplateField>
+                                                                        <asp:BoundField DataField="EmployeeId" HeaderText="EmployeeId" Visible="False" />
+                                                                        <asp:BoundField DataField="EmployeeName" HeaderText="Employee Name" />
+                                                                        <asp:BoundField DataField="PassportExpiryDate" HeaderText="Passport Expiry Date"
+                                                                            DataFormatString="{0:MM/dd/yyyy}" />
+                                                                        <asp:BoundField DataField="PassportNo" HeaderText="PassportNo" />
+                                                                    </Columns>
+                                                                    <EmptyDataTemplate>
+                                                                        No Data Exists!!!!
+                                                                    </EmptyDataTemplate>
+                                                                </asp:GridView>
+
+                                                            </asp:Panel>
+
+
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h4>Visa Expiry List</h4>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel8" runat="server"  Height="500px" Width="500px">
+                                                                <h4>This Month</h4>
+                                                                <table width="100%">
+                                                                    <tr>
+                                                                        <td valign="Top">Month 
+                                                            <asp:DropDownList ID="ddmonthvisa" runat="server" Width="120px" ValidationGroup="a" CssClass="form-control" AutoPostBack="True" OnSelectedIndexChanged="ddmonthvisa_SelectedIndexChanged">
+                                                                <asp:ListItem>--Select--</asp:ListItem>
+                                                                <asp:ListItem Value="1">January</asp:ListItem>
+                                                                <asp:ListItem Value="2">February</asp:ListItem>
+                                                                <asp:ListItem Value="3">March</asp:ListItem>
+                                                                <asp:ListItem Value="4">April</asp:ListItem>
+                                                                <asp:ListItem Value="5">May</asp:ListItem>
+                                                                <asp:ListItem Value="6">June</asp:ListItem>
+                                                                <asp:ListItem Value="7">July</asp:ListItem>
+                                                                <asp:ListItem Value="8">August</asp:ListItem>
+                                                                <asp:ListItem Value="9">September</asp:ListItem>
+                                                                <asp:ListItem Value="10">October</asp:ListItem>
+                                                                <asp:ListItem Value="11">November</asp:ListItem>
+                                                                <asp:ListItem Value="12">December</asp:ListItem>
+                                                            </asp:DropDownList>
+                                                                        </td>
+                                                                        <td valign="Top">Year
+                                                            <asp:DropDownList ID="ddyearVisa" runat="server"  CssClass="form-control" AutoPostBack="True" OnSelectedIndexChanged="ddyearVisa_SelectedIndexChanged">
+                                                                <asp:ListItem>--Select--</asp:ListItem>
+                                                                <asp:ListItem Value="2013">2013</asp:ListItem>
+                                                                <asp:ListItem Value="2014">2014</asp:ListItem>
+                                                                <asp:ListItem Value="2015">2015</asp:ListItem>
+                                                                <asp:ListItem Value="2016">2016</asp:ListItem>
+                                                                <asp:ListItem Value="2017">2017</asp:ListItem>
+                                                                <asp:ListItem Value="2018">2018</asp:ListItem>
+                                                                <asp:ListItem Value="2019">2019</asp:ListItem>
+                                                                <asp:ListItem Value="2020">2020</asp:ListItem>
+                                                                <asp:ListItem Value="2021">2021</asp:ListItem>
+                                                                <asp:ListItem Value="2022">2022</asp:ListItem>
+                                                                <asp:ListItem Value="2023">2023</asp:ListItem>
+                                                                <asp:ListItem Value="2024">2024</asp:ListItem>
+                                                                <asp:ListItem Value="2025">2025</asp:ListItem>
+                                                                <asp:ListItem Value="2026">2026</asp:ListItem>
+                                                                <asp:ListItem Value="2027">2027</asp:ListItem>
+                                                                <asp:ListItem Value="2028">2028</asp:ListItem>
+                                                                <asp:ListItem Value="2029">2029</asp:ListItem>
+                                                                <asp:ListItem Value="2030">2030</asp:ListItem>
+                                                            </asp:DropDownList>
+                                                                        </td>
+                                                                        <td valign="bottom" style="display: none">
+                                                                            <asp:Button ID="btnVisaPrint" runat="server" CssClass="btn bg-blue-active" Text="Print" OnClick="btnVisaPrint_Click" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td colspan="3">&nbsp;
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td colspan="3">
+                                                                            <asp:GridView ID="grd_VisaExpiryListthismonth" runat="server" AutoGenerateColumns="False" PageSize="5"
+                                                                                AllowPaging="True" CssClass="table table-bordered table-striped" Width="100%" Caption="Visa Expiry List"
+                                                                                OnPageIndexChanging="grd_VisaExpiryListthismonth_PageIndexChanging">
+                                                                                <Columns>
+                                                                                    <asp:TemplateField HeaderText="Sr.No">
+                                                                                        <ItemTemplate>
+                                                                                            <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno1" />
+                                                                                        </ItemTemplate>
+                                                                                    </asp:TemplateField>
+                                                                                    <asp:BoundField DataField="EmployeeId" HeaderText="Employee Name" Visible="False" />
+                                                                                    <asp:BoundField DataField="EmployeeName" HeaderText="Employee Name" />
+                                                                                    <asp:BoundField DataField="VisaExpiryDate" HeaderText="Visa Expiry Date" DataFormatString="{0:MM/dd/yyyy}" />
+                                                                                    <asp:BoundField DataField="VisaNo" HeaderText="Visa No" />
+                                                                                </Columns>
+                                                                                <EmptyDataTemplate>
+                                                                                    No Data Exists!!!!
+                                                                                </EmptyDataTemplate>
+                                                                            </asp:GridView>
+
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+
+                                                                <hr />
+                                                                <div class="box-header" style="cursor: move;">
+                                                                    <i class="fa fa-eye"></i>
+                                                                    <h3 class="box-title">Today</h3>
+                                                                </div>
+                                                                <asp:GridView ID="grd_VisaExpiryListtodays" runat="server" AutoGenerateColumns="False"
+                                                                    AllowPaging="True" CssClass="table table-bordered table-striped" OnPageIndexChanging="grd_VisaExpiryListtodays_PageIndexChanging">
+                                                                    <Columns>
+                                                                        <asp:TemplateField HeaderText="Sr.No">
+                                                                            <ItemTemplate>
+                                                                                <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno1" />
+                                                                            </ItemTemplate>
+                                                                        </asp:TemplateField>
+                                                                        <asp:BoundField DataField="EmployeeId" HeaderText="Employee Name" Visible="False" />
+                                                                        <asp:BoundField DataField="EmployeeName" HeaderText="Employee Name" />
+                                                                        <asp:BoundField DataField="VisaExpiryDate" HeaderText="Visa Expiry Date" DataFormatString="{0:MM/dd/yyyy}" />
+                                                                        <asp:BoundField DataField="VisaNo" HeaderText="Visa No" />
+                                                                    </Columns>
+                                                                    <EmptyDataTemplate>
+                                                                        No Data Exists!!!!
+                                                                    </EmptyDataTemplate>
+                                                                </asp:GridView>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>                               
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="dashboard2">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h3 class="box-title">Employee Head Count</h3>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel11" runat="server">
+                                                                <asp:Chart ID="Chart1" runat="server" Width="800px"
+                                                                    BorderDashStyle="Solid" BackSecondaryColor="White"
+                                                                    BackGradientStyle="TopBottom" BorderWidth="2px" BackColor="211, 223, 240"
+                                                                    BorderColor="#1A3B69" Palette="Berry">
+                                                                    <Series>
+                                                                        <asp:Series Name="Series1" ChartArea="ChartArea1" ChartType="StackedBar" XValueMember="CompanyName"
+                                                                            YValueMembers="Employeecount" YValuesPerPoint="2" IsXValueIndexed="True" BackGradientStyle="VerticalCenter"
+                                                                            BorderWidth="5" MarkerSize="10" IsValueShownAsLabel="True">
+                                                                        </asp:Series>
+                                                                    </Series>
+                                                                    <ChartAreas>
+                                                                        <asp:ChartArea Name="ChartArea1"
+                                                                            BorderColor="64, 64, 64, 64"
+                                                                            BorderDashStyle="Solid" BackSecondaryColor="White"
+                                                                            BackColor="64, 165, 191, 228"
+                                                                            ShadowColor="LightGray" BackGradientStyle="TopBottom">
+                                                                            <AxisY LineColor="64, 64, 64, 64" Title="EmployeeCount" LineWidth="5">
+                                                                                <LabelStyle ForeColor="Red" Font="Trebuchet MS, 8.25pt, style=Bold" />
+                                                                            </AxisY>
+                                                                        </asp:ChartArea>
+                                                                    </ChartAreas>
+                                                                    <BorderSkin SkinStyle="Emboss" />
+                                                                </asp:Chart>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h3 class="box-title">Gender Distribution</h3>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel12" runat="server">
+                                                                <asp:Chart ID="Chart2" runat="server" Width="800px"
+                                                                    BorderDashStyle="Solid" BackSecondaryColor="White"
+                                                                    BackGradientStyle="TopBottom" BorderWidth="2px" BackColor="211, 223, 240"
+                                                                    BorderColor="#1A3B69">
+                                                                    <Titles>
+                                                                        <asp:Title ShadowOffset="3" Name="Title1" />
+                                                                    </Titles>
+                                                                    <Legends>
+                                                                        <asp:Legend Alignment="Center" Docking="Bottom" IsTextAutoFit="False" Name="Default"
+                                                                            LegendStyle="Row" />
+                                                                    </Legends>
+                                                                    <Series>
+                                                                        <asp:Series Name="Default" IsValueShownAsLabel="True" ChartArea="ChartArea1" ChartType="Pie"
+                                                                            Legend="Default" />
+                                                                    </Series>
+                                                                    <ChartAreas>
+                                                                        <asp:ChartArea Name="ChartArea1" BorderWidth="0">
+                                                                            <Area3DStyle Enable3D="True" />
+                                                                        </asp:ChartArea>
+                                                                    </ChartAreas>
+                                                                    <BorderSkin SkinStyle="Emboss" />
+                                                                </asp:Chart>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-3">
+                                                    <label>Select Department</label>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <asp:DropDownList ID="ddcompanywise" runat="server" CssClass="form-control" AutoPostBack="True" OnSelectedIndexChanged="ddcompanywise_SelectedIndexChanged2">
+                                                    </asp:DropDownList>
+                                                    <br />
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h3 class="box-title">Employee Count</h3>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel13" runat="server">
+                                                                <asp:Chart ID="chartdepartmentwise" runat="server" Width="700px"
+                                                                    BorderDashStyle="Solid" BackSecondaryColor="White"
+                                                                    BackGradientStyle="TopBottom" BorderWidth="2px" BackColor="211, 223, 240"
+                                                                    BorderColor="#1A3B69" Palette="Berry">
+                                                                    <Series>
+                                                                        <asp:Series Name="Series1" ChartArea="ChartArea1" ChartType="StackedBar" XValueMember="DeptName"
+                                                                            YValueMembers="Employeecount" YValuesPerPoint="2" IsXValueIndexed="True" BackGradientStyle="VerticalCenter"
+                                                                            BorderWidth="5" MarkerSize="10" IsValueShownAsLabel="True">
+                                                                        </asp:Series>
+                                                                    </Series>
+                                                                    <ChartAreas>
+                                                                        <asp:ChartArea Name="ChartArea1">
+                                                                            <AxisY Title="EmployeeCount" LineWidth="5">
+                                                                            </AxisY>
+                                                                            <AxisX Title="DeptName">
+                                                                            </AxisX>
+                                                                        </asp:ChartArea>
+                                                                    </ChartAreas>
+                                                                    <BorderSkin SkinStyle="Emboss" />
+                                                                </asp:Chart>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <div class="box box-info">
+                                                        <div class="box-header" style="cursor: move;">
+                                                            <i class="fa fa-eye"></i>
+                                                            <h3 class="box-title">Gender Distribution</h3>
+                                                        </div>
+                                                        <div class="box-body">
+                                                            <asp:Panel ID="Panel14" runat="server">
+                                                                <asp:Chart ID="Chart3" runat="server" Width="650px"
+                                                                    BorderDashStyle="Solid" BackSecondaryColor="White"
+                                                                    BackGradientStyle="TopBottom" BorderWidth="2px" BackColor="211, 223, 240"
+                                                                    BorderColor="#1A3B69" Palette="Berry">
+                                                                    <Titles>
+                                                                        <asp:Title ShadowOffset="3" Name="Title1" />
+                                                                    </Titles>
+                                                                    <Legends>
+                                                                        <asp:Legend Alignment="Center" Docking="Bottom" IsTextAutoFit="False" Name="Default"
+                                                                            LegendStyle="Row" />
+                                                                    </Legends>
+                                                                    <Series>
+                                                                        <asp:Series Name="Default" IsValueShownAsLabel="True" ChartArea="ChartArea1" ChartType="Pie"
+                                                                            Legend="Default" />
+                                                                    </Series>
+                                                                    <ChartAreas>
+                                                                        <asp:ChartArea Name="ChartArea1" BorderWidth="0">
+                                                                            <Area3DStyle Enable3D="True" />
+                                                                        </asp:ChartArea>
+                                                                    </ChartAreas>
+                                                                    <BorderSkin SkinStyle="Emboss" />
+                                                                </asp:Chart>
+                                                            </asp:Panel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    <div class="tab-pane" id="dashboard3">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class="col-lg-2">
+                                                <label>Select Company</label>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <asp:DropDownList ID="ddempmonthcompnay" runat="server" CssClass="form-control" OnSelectedIndexChanged="ddcompanywise_SelectedIndexChanged2"></asp:DropDownList>
+                                                <br />
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <label>Select Year</label>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <asp:DropDownList ID="ddyear" runat="server" CssClass="form-control">
+                                                    <asp:ListItem Text="2013"></asp:ListItem>
+                                                    <asp:ListItem Selected="True" Text="2014"></asp:ListItem>
+                                                    <asp:ListItem Text="2015"></asp:ListItem>
+                                                </asp:DropDownList>
+                                                <tr id="tr1" runat="server" visible="False">
+                                                    <td runat="server">From Date :
+                                                    </td>
+                                                    <td runat="server">
+                                                        <asp:TextBox ID="txtfromdate" runat="server" CssClass="form-control"></asp:TextBox>
+                                                        <asp:TextBoxWatermarkExtender ID="txtfromdate_TextBoxWatermarkExtender" runat="server"
+                                                            Enabled="True" TargetControlID="txtfromdate" WatermarkText="From Date">
+                                                        </asp:TextBoxWatermarkExtender>
+                                                        <asp:CalendarExtender ID="txtfromdate_CalendarExtender" runat="server" Enabled="True"
+                                                            TargetControlID="txtfromdate">
+                                                        </asp:CalendarExtender>
+                                                    </td>
+                                                    <td runat="server">To Date :
+                                                    </td>
+                                                    <td runat="server">
+                                                        <asp:TextBox ID="txttodate" runat="server" CssClass="form-control"></asp:TextBox>
+                                                        <asp:TextBoxWatermarkExtender ID="txttodate_TextBoxWatermarkExtender" WatermarkText="To Date"
+                                                            runat="server" Enabled="True" TargetControlID="txttodate">
+                                                        </asp:TextBoxWatermarkExtender>
+                                                        <asp:CalendarExtender ID="txttodate_CalendarExtender" runat="server" Enabled="True"
+                                                            TargetControlID="txttodate">
+                                                        </asp:CalendarExtender>
+                                                    </td>
+                                                </tr>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <asp:Button ID="btnshow" runat="server" CssClass="btn bg-blue-active" Text="Show" ValidationGroup="S"
+                                                    OnClick="btnshow_Click" />
+                                                <br />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <div class="box box-info">
+                                                    <div class="box-header" style="cursor: move;">
+                                                        <i class="fa fa-eye"></i>
+                                                        <h3 class="box-title">Employee Head Count</h3>
+                                                    </div>
+                                                    <div class="box-body">
+                                                        <asp:Panel ID="Panel15" runat="server">
+                                                            <asp:Chart ID="charempcount" runat="server" Style="width: 80%; min-height: 200px;"
+                                                                BorderDashStyle="Solid" BackSecondaryColor="White"
+                                                                BackGradientStyle="TopBottom" BorderWidth="2px" BackColor="211, 223, 240"
+                                                                BorderColor="#1A3B69"
+                                                                Palette="Berry" AlternateText="No Data">
+                                                                <Series>
+                                                                    <asp:Series Name="Series1" ChartArea="ChartArea1" ChartType="Line" XValueMember="Month"
+                                                                        YValueMembers="EmployeeCount" BackGradientStyle="VerticalCenter" BorderWidth="5"
+                                                                        IsValueShownAsLabel="True" MarkerStyle="Triangle">
+                                                                    </asp:Series>
+                                                                </Series>
+                                                                <ChartAreas>
+                                                                    <asp:ChartArea Name="ChartArea1">
+                                                                        <AxisY Title="EmployeeCount"></AxisY>
+
+                                                                        <AxisX Title="Month"></AxisX>
+                                                                    </asp:ChartArea>
+                                                                </ChartAreas>
+                                                                <BorderSkin SkinStyle="Emboss" />
+                                                            </asp:Chart>
+                                                        </asp:Panel>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="box box-info">
+                                                    <div class="box-header" style="cursor: move;">
+                                                        <i class="fa fa-eye"></i>
+                                                        <h3 class="box-title">Total Gross Salary</h3>
+                                                    </div>
+                                                    <div class="box-body">
+                                                        <asp:Panel ID="Panel5" runat="server">
+                                                            <asp:Chart ID="chartsalary" runat="server" Style="width: 80%; min-height: 200px;"
+                                                                BorderDashStyle="Solid" BackSecondaryColor="White"
+                                                                BackGradientStyle="TopBottom" BorderWidth="2px" BackColor="211, 223, 240"
+                                                                BorderColor="#1A3B69"
+                                                                Palette="Berry">
+                                                                <Series>
+                                                                    <asp:Series Name="Series1" ChartArea="ChartArea1" XValueMember="Month" YValueMembers="Salary"
+                                                                        IsXValueIndexed="True" BackGradientStyle="VerticalCenter" BorderWidth="5" MarkerSize="10"
+                                                                        IsValueShownAsLabel="True">
+                                                                    </asp:Series>
+                                                                </Series>
+                                                                <ChartAreas>
+                                                                    <asp:ChartArea Name="ChartArea1">
+                                                                        <AxisY Title="Salary" LineWidth="10"></AxisY>
+
+                                                                        <AxisX Title="Month"></AxisX>
+                                                                    </asp:ChartArea>
+                                                                </ChartAreas>
+                                                                <BorderSkin SkinStyle="Emboss" />
+                                                            </asp:Chart>
+                                                        </asp:Panel>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div class="box box-info">
+                                                    <div class="box-header" style="cursor: move;">
+                                                        <i class="fa fa-eye"></i>
+                                                        <h3 class="box-title">Top 5 Leave Takers</h3>
+                                                    </div>
+                                                    <div class="box-body">
+                                                        <asp:Panel ID="Panel6" runat="server">
+                                                            <asp:GridView ID="grdleave" runat="server" AutoGenerateColumns="False" CssClass="table table-bordered table-striped"
+                                                                Width="95%">
+                                                                <Columns>
+                                                                    <asp:BoundField DataField="EmployeeId" HeaderText="EmployeeNo" />
+                                                                    <asp:BoundField DataField="employeename" HeaderText="Employeename" />
+                                                                    <asp:BoundField DataField="Days" HeaderText="Days" />
+                                                                </Columns>
+                                                            </asp:GridView>
+                                                        </asp:Panel>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="dashboard4">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <br />
+
+                                            <div class="col-lg-3">
+                                                <label>Select Date:</label>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <asp:TextBox runat="server" Width="200px" ID="txtDate" CssClass="form-control" OnTextChanged="txtDate_TextChanged" AutoPostBack="true"></asp:TextBox>
+                                                <asp:CalendarExtender ID="CalendarExtender3" runat="server" Format="MM/dd/yyyy" TargetControlID="txtDate">
+                                                </asp:CalendarExtender>
+                                                <br />
+
+                                            </div>
+
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="box box-info">
+                                                    <div class="box-header" style="cursor: move;">
+                                                        <i class="fa fa-eye"></i>
+                                                        <h3 class="box-title">Todays Interview</h3>
+                                                    </div>
+                                                    <div class="box-body">
+                                                        <asp:Panel ID="Panel16" runat="server">
+                                                            <asp:GridView ID="grdTodaysInterview" runat="server" AutoGenerateColumns="False" CssClass="table table-bordered table-striped"
+                                                                Width="98%" PageSize="5" OnPageIndexChanging="grdTodaysInterview_PageIndexChanging" AllowPaging="true">
+                                                                <Columns>
+                                                                    <asp:TemplateField HeaderText="Sr. No." HeaderStyle-HorizontalAlign="Center" HeaderStyle-Width="60px" ItemStyle-HorizontalAlign="Center">
+                                                                        <ItemTemplate>
+                                                                            <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno" />
+                                                                        </ItemTemplate>
+                                                                    </asp:TemplateField>
+
+                                                                    <asp:BoundField DataField="Name" HeaderText="Candidate Name" />
+
+                                                                    <asp:BoundField DataField="position" HeaderText="Position Name" />
+                                                                    <asp:BoundField DataField="Date" HeaderText="Interview Date" DataFormatString="{0:MM/dd/yyyy}" />
+                                                                    <asp:BoundField DataField="FromTime" HeaderText="From Time" />
+                                                                    <asp:BoundField DataField="ToTime" HeaderText="To Time" />
+                                                                    <asp:BoundField DataField="Status" HeaderText="Status" />
+                                                                    <%--<asp:BoundField DataField="Interviewername" HeaderText="Interviewer's Name" />--%>
+                                                                </Columns>
+                                                                <EmptyDataTemplate>
+                                                                    No Record Exists.........!!
+                                                                </EmptyDataTemplate>
+                                                                <PagerStyle HorizontalAlign="Right" />
+
+                                                            </asp:GridView>
+                                                        </asp:Panel>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+
+                                            <div class="col-lg-6">
+                                                <div class="box box-info">
+                                                    <div class="box-header" style="cursor: move;">
+                                                        <i class="fa fa-eye"></i>
+                                                        <h3 class="box-title">Candidate by Agency </h3>
+                                                    </div>
+                                                    <div class="box-body">
+                                                        <asp:Panel ID="Panel17" runat="server">
+                                                            <asp:Chart ID="Chart4" runat="server" Width="800px"
+                                                                BorderDashStyle="Solid" BackSecondaryColor="White"
+                                                                BackGradientStyle="TopBottom" BorderWidth="2px" BackColor="211, 223, 240"
+                                                                BorderColor="#1A3B69">
+                                                                <Titles>
+                                                                    <asp:Title ShadowOffset="3" Name="Title1" />
+                                                                </Titles>
+                                                                <Legends>
+                                                                    <asp:Legend Alignment="Center" Docking="Bottom" IsTextAutoFit="False" Name="Default"
+                                                                        LegendStyle="Row" />
+                                                                </Legends>
+                                                                <Series>
+                                                                    <asp:Series Name="Default" IsValueShownAsLabel="True" ChartArea="ChartArea1" ChartType="Pie"
+                                                                        Legend="Default" />
+                                                                </Series>
+                                                                <ChartAreas>
+                                                                    <asp:ChartArea Name="ChartArea1" BorderWidth="0">
+                                                                        <Area3DStyle Enable3D="True" />
+                                                                    </asp:ChartArea>
+                                                                </ChartAreas>
+                                                                <BorderSkin SkinStyle="Emboss" />
+                                                            </asp:Chart>
+                                                        </asp:Panel>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-lg-6">
+                                                <div class="box box-info">
+                                                    <div class="box-header" style="cursor: move;">
+                                                        <i class="fa fa-eye"></i>
+                                                        <h3 class="box-title">Reference by Employee</h3>
+                                                    </div>
+                                                    <div class="box-body">
+                                                        <asp:Panel ID="Panel18" runat="server">
+                                                            <asp:Chart ID="Chart5" runat="server" Width="800px"
+                                                                BorderDashStyle="Solid" BackSecondaryColor="White"
+                                                                BackGradientStyle="TopBottom" BorderWidth="2px" BackColor="211, 223, 240"
+                                                                BorderColor="#1A3B69">
+                                                                <Titles>
+                                                                    <asp:Title ShadowOffset="3" Name="Title1" />
+                                                                </Titles>
+                                                                <Legends>
+                                                                    <asp:Legend Alignment="Center" Docking="Bottom" IsTextAutoFit="False" Name="Default"
+                                                                        LegendStyle="Row" />
+                                                                </Legends>
+                                                                <Series>
+                                                                    <asp:Series Name="Default" IsValueShownAsLabel="True" ChartArea="ChartArea1" ChartType="Pie"
+                                                                        Legend="Default" />
+                                                                </Series>
+                                                                <ChartAreas>
+                                                                    <asp:ChartArea Name="ChartArea1" BorderWidth="0">
+                                                                        <Area3DStyle Enable3D="True" />
+                                                                    </asp:ChartArea>
+                                                                </ChartAreas>
+                                                                <BorderSkin SkinStyle="Emboss" />
+                                                            </asp:Chart>
+                                                        </asp:Panel>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+</asp:Content>

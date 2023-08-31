@@ -1,0 +1,1181 @@
+﻿using System;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Text;
+using System.Web.Mail;
+using System.Web.UI;
+using System.Web.UI.DataVisualization.Charting;
+using System.Web.UI.WebControls;
+using System.Linq;
+public partial class DashBoardCopy : System.Web.UI.Page
+{
+    HrPortalDtaClassDataContext HR = new HrPortalDtaClassDataContext();
+    Genreal g = new Genreal();
+    static DataTable tbl = null;
+    static DataTable tblcompmonth = null;
+    static DataTable tblcomponeyear = null;
+    int year = 0;
+    int yearvisa = 0;
+    DataRow dr = null;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (Session["UserId"] != null)
+        {
+            ScriptManager scriptManager = ScriptManager.GetCurrent(this.Page);
+            scriptManager.RegisterPostBackControl(this.btnpassportPrint);
+            scriptManager.RegisterPostBackControl(this.btnVisaPrint);
+            if (!IsPostBack)
+            {
+
+                BindChartReferenceByEmployee();
+                BindChartCandidateByAgency();
+               
+
+
+                txtDate.Attributes.Add("readonly", "readonly");
+                txtDate.Text = g.GetCurrentDateTime().ToShortDateString();
+                BindTodaysInterview();
+
+                ddmonth.Items.FindByValue(Convert.ToString(DateTime.Now.Month)).Selected = true;
+                year = DateTime.Now.Year;
+                ddyearPassport.SelectedIndex = -1;
+                ddyearPassport.Items.FindByValue(System.DateTime.Now.Year.ToString()).Selected = true;
+
+                ddmonthvisa.Items.FindByValue(Convert.ToString(DateTime.Now.Month)).Selected = true;
+                yearvisa = DateTime.Now.Year;
+                ddyearVisa.SelectedIndex = -1;
+                ddyearVisa.Items.FindByValue(System.DateTime.Now.Year.ToString()).Selected = true;
+
+                DataTable dsts = g.ReturnData(@"SELECT   DATEADD(yy, DATEDIFF(yy,0,getdate()), 0) AS StartOfYear,   DATEADD(yy, DATEDIFF(yy,0,getdate()) + 1, -1) AS EndOfYear");
+                DateTime dtF = Convert.ToDateTime(dsts.Rows[0]["StartOfYear"].ToString());
+                DateTime dtT = Convert.ToDateTime(dsts.Rows[0]["EndOfYear"].ToString());
+                txtfromdate.Text = dtF.ToShortDateString();
+                txttodate.Text = dtT.ToShortDateString();
+                CompletedStatus();
+                BindCompany1();
+                BindCompany();
+
+                #region BirthdayDatatable
+                tbl = new DataTable();
+                tbl.Columns.Add(new DataColumn("EmpName", typeof(string)));
+                tbl.Columns.Add(new DataColumn("Department", typeof(string)));
+                tbl.Columns.Add(new DataColumn("BirthDate", typeof(string)));
+
+                #endregion
+                #region 6 Month Completed
+                tblcompmonth = new DataTable();
+                // tblcompmonth.Columns.Add(new DataColumn("EmployeeId", typeof(string)));
+                tblcompmonth.Columns.Add(new DataColumn("EmpName", typeof(string)));
+                tblcompmonth.Columns.Add(new DataColumn("Department", typeof(string)));
+                tblcompmonth.Columns.Add(new DataColumn("JoinDate", typeof(string)));
+                #endregion
+
+                #region One Year Completed
+                tblcomponeyear = new DataTable();
+                // tblcomponeyear.Columns.Add(new DataColumn("EmployeeId", typeof(string)));
+                tblcomponeyear.Columns.Add(new DataColumn("EmpName", typeof(string)));
+                tblcomponeyear.Columns.Add(new DataColumn("Department", typeof(string)));
+                tblcomponeyear.Columns.Add(new DataColumn("JoinDate", typeof(string)));
+                #endregion
+
+                Bind6MonthCopm();
+                BindWill1YearComp();
+                BindWillCompSixMonthbirth();
+
+
+                BindTodaysVisaExpiryList();
+
+                BindTodaysPassportExpiryList();
+
+                BindTodayBirth();
+
+                BindToday6monthComp();
+                Bindtoday1yearComp();
+
+
+                BindallthisMonthPassportExpiryList();
+                BindallthisMonthVisaExpiryList();
+                DisplayData();
+
+                //ddcompanywise.SelectedValue = "2";
+
+                BindChartdata();
+                //DateTime dts = g.GetStartOfMonth(Convert.ToDateTime(DateTime.Now.ToShortDateString()));
+                //DateTime dtE = g.EndOfMonth(Convert.ToDateTime(DateTime.Now.ToShortDateString()));
+
+                //txtfromdate.Text = dts.ToShortDateString();
+                //txttodate.Text = dtE.ToShortDateString();
+                ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "text", "Javascript:activateTab('tab_1')", true);
+
+            }
+            if (!string.IsNullOrEmpty(activeTab.Value))
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "importingdone", "ImportingDone(" + activeTab.Value + ");", true);
+
+            }
+            else
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "importingdone", "ImportingDone(1);", true);
+            }
+        }
+        else
+        {
+            Response.Redirect("Login.aspx");
+        }
+    }
+
+    private void BindCompany()
+    {
+        //Manasi
+        //// string query = "select 0 as CompanyId,'All' as CompanyName union all  select CompanyId,CompanyName from CompanyInfoTB where Status=0";
+        string query = "select 0 as CompanyId,'All' as CompanyName union all select CompanyId,CompanyName from compaNYiNFOTB where Status=0";
+
+        DataSet dscompnay = g.ReturnData1(query);
+        ddcompanywise.DataTextField = "CompanyName";
+        ddcompanywise.DataValueField = "CompanyId";
+        ddcompanywise.DataSource = dscompnay.Tables[0];
+        ddcompanywise.DataBind();
+
+
+
+        //ddempmonthcompnay.DataTextField = "CompanyName";
+        //ddempmonthcompnay.DataValueField = "CompanyId";
+        //ddempmonthcompnay.DataSource = dscompnay.Tables[0];
+        //ddempmonthcompnay.DataBind();
+    }
+    private void BindCompany1()
+    {
+        //Manasi
+        string query = "select 0 as CompanyId,'All' as CompanyName union all  select CompanyId,CompanyName from compaNYiNFOTB where Status=0";
+        //// string query = "select CompanyId,CompanyName from CompanyInfoTB where Status=0";
+
+        DataSet dscompnay = g.ReturnData1(query);
+
+
+
+
+        ddempmonthcompnay.DataTextField = "CompanyName";
+        ddempmonthcompnay.DataValueField = "CompanyId";
+        ddempmonthcompnay.DataSource = dscompnay.Tables[0];
+        ddempmonthcompnay.DataBind();
+    }
+    private void CompletedStatus()
+    {
+        //Today's 6 Month Completed
+        string querytodaymonth = "Declare @Month int Declare @Year int SELECT  @Month=Datepart(M,GETDATE()) - 6,@Year=Datepart(YYYY,GETDATE()) if @Month <= 0 BEGIN set @Month=12 + @Month print Convert(nvarchar(MAX),@Month) set @Year=@Year -1 print Convert(nvarchar(MAX),@Year) END SELECT COUNT(*) from EmployeeTB where DATEPART(M,doj)=@Month AND  DATEPART(YYYY,DOJ)=@Year AND DATEPART(DD,DOJ)=Day  (GETDATE())";
+        DataSet Dstoday = g.ReturnData1(querytodaymonth);
+        DataTable DtToday = Dstoday.Tables[0];
+        //  lnnkToday6month.Text = DtToday.Rows[0][0].ToString();
+
+        //Today' 1 Year Completed
+        string QuerytodayYear = "Declare @Month int Declare @Year int SELECT  @Month=Datepart(M,GETDATE()) - 12,@Year=Datepart(YYYY,GETDATE()) if @Month <= 0 BEGIN set @Month=12 + @Month print Convert(nvarchar(MAX),@Month) set @Year=@Year -1 print Convert(nvarchar(MAX),@Year) END SELECT COUNT(*) from EmployeeTB where DATEPART(M,doj)=@Month AND DATEPART(YYYY,DOJ)=@Year AND DATEPART(DD,DOJ)=Day  (GETDATE())";
+        DataSet DstodayYear = g.ReturnData1(QuerytodayYear);
+        DataTable DtTodayYY = DstodayYear.Tables[0];
+        // Linltoday1year.Text = DtTodayYY.Rows[0][0].ToString();
+        // 
+        string query1 = "Declare @Month int Declare @Year int SELECT  @Month=Datepart(M,GETDATE()) - 6,@Year=Datepart(YYYY,GETDATE()) if @Month <= 0 BEGIN set @Month=12 + @Month print Convert(nvarchar(MAX),@Month) set @Year=@Year -1 print Convert(nvarchar(MAX),@Year) END SELECT COUNT(*) from EmployeeTB where DATEPART(M,doj)=@Month AND DATEPART(YYYY,DOJ)=@Year ";
+        DataSet ds1 = g.ReturnData1(query1);
+        DataTable dt1 = ds1.Tables[0];
+        //  link6mont.Text = dt1.Rows[0][0].ToString();
+
+        string query2 = "Declare @Month int Declare @Year int SELECT  @Month=Datepart(M,GETDATE()) - 12,@Year=Datepart(YYYY,GETDATE()) if @Month <= 0 BEGIN set @Month=12 + @Month print Convert(nvarchar(MAX),@Month) set @Year=@Year -1 print Convert(nvarchar(MAX),@Year) END SELECT COUNT(*) from EmployeeTB where DATEPART(M,doj)=@Month AND DATEPART(YYYY,DOJ)=@Year";
+        DataSet ds2 = g.ReturnData1(query2);
+        DataTable dt2 = ds2.Tables[0];
+        //  link1year.Text = dt2.Rows[0][0].ToString();
+
+        string query3 = "select  Count(*) from EmployeeTB where DATEPART(MONTH,BirthDate)=Month(GETDATE())";
+        DataSet ds3 = g.ReturnData1(query3);
+        DataTable dt3 = ds3.Tables[0];
+        // linkmonthBth.Text = dt3.Rows[0][0].ToString();
+
+        string query4 = "select  Count(*) from EmployeeTB where DATEPART(DD,BirthDate)=Day(GETDATE()) AND DATEPART(MM,BirthDate) =MONTH (GETDATE()) ";
+        DataSet ds4 = g.ReturnData1(query4);
+        DataTable dt4 = ds4.Tables[0];
+        //   linktodaybth.Text = dt4.Rows[0][0].ToString();
+
+        string query5 = "select  Count(*) from EmployeeTB where  DATEPART(MM,PassportExpiryDate) =MONTH (GETDATE()) ";
+        DataSet ds5 = g.ReturnData1(query5);
+        DataTable dt5 = ds5.Tables[0];
+        //   lnkMonthPassport.Text = dt5.Rows[0][0].ToString();
+
+
+        string query6 = "select  Count(*) from EmployeeTB where  DATEPART(MM,VisaExpiryDate) =MONTH (GETDATE()) ";
+        DataSet ds6 = g.ReturnData1(query6);
+        DataTable dt6 = ds6.Tables[0];
+        //   lnkVisaExpiryList.Text = dt6.Rows[0][0].ToString();
+
+        string query7 = "select  Count(*) from EmployeeTB where DATEPART(DD,PassportExpiryDate)=Day(GETDATE()) AND   DATEPART(MM,PassportExpiryDate) =MONTH (GETDATE()) ";
+        DataSet ds7 = g.ReturnData1(query7);
+        DataTable dt7 = ds7.Tables[0];
+        //   lnkTodaysExpiryDate.Text = dt7.Rows[0][0].ToString();
+
+
+        string query8 = "select  Count(*) from EmployeeTB where DATEPART(DD,VisaExpiryDate)=Day(GETDATE()) AND   DATEPART(MM,VisaExpiryDate) =MONTH (GETDATE()) ";
+        DataSet ds8 = g.ReturnData1(query8);
+        DataTable dt8 = ds8.Tables[0];
+        //    lnkTodayVisaExpiryList.Text = dt8.Rows[0][0].ToString();
+
+
+
+
+        //
+        //string date = RentalDate;
+        //string date2 = (DateTime.Parse(date).AddMonths(Convert.ToInt32(-6))).ToString();
+
+    }
+    protected void link6mont_Click(object sender, EventArgs e)
+    {
+        //  HiddenFieldWillCompPeriod.Value = "1";
+        Bind6MonthCopm();
+
+
+    }
+
+    private void Bind6MonthCopm()
+    {
+
+        string query11 = "Declare @Month int Declare @Year int SELECT  @Month=Datepart(M,GETDATE()) - 6,@Year=Datepart(YYYY,GETDATE()) if @Month <= 0 BEGIN set @Month=12 + @Month print Convert(nvarchar(MAX),@Month) set @Year=@Year -1 print Convert(nvarchar(MAX),@Year) END SELECT EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName , MasterDeptTB.DeptName, CONVERT(varchar,DOJ,103) AS DOJ from EmployeeTB left outer join MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId  where DATEPART(M,doj)=@Month AND DATEPART(YYYY,DOJ)=@Year ";
+        DataSet ds11 = g.ReturnData1(query11);
+        grd6MonthCurrentmonth.DataSource = ds11.Tables[0];
+        grd6MonthCurrentmonth.DataBind();
+        //    ModView6month.Show();
+        //    divsendcomp.Visible = false;
+        //     lbltitle.Text = "This Month Will Complete Six Month Employee List";
+        DisplayData();
+    }
+
+
+
+    private void BindWill1YearComp()
+    {
+
+        string query22 = "Declare @Month int Declare @Year int SELECT  @Month=Datepart(M,GETDATE()) - 12,@Year=Datepart(YYYY,GETDATE()) if @Month <= 0 BEGIN set @Month=12 + @Month print Convert(nvarchar(MAX),@Month) set @Year=@Year -1 print Convert(nvarchar(MAX),@Year) END SELECT EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName , MasterDeptTB.DeptName, CONVERT(varchar,DOJ,103) AS DOJ from EmployeeTB left outer join MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId  where DATEPART(M,doj)=@Month AND DATEPART(YYYY,DOJ)=@Year";
+        DataSet ds22 = g.ReturnData1(query22);
+        // DataTable dt22 = ds22.Tables[0];
+        grd1yearcurrentMonth.DataSource = ds22.Tables[0];
+        grd1yearcurrentMonth.DataBind();
+        DisplayData();
+
+    }
+
+
+    private void BindWillCompSixMonthbirth()
+    {
+
+        string query33 = "select  EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName, MasterDeptTB.DeptName,CONVERT(varchar,BirthDate,103) AS BirthDate from EmployeeTB left outer join MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId where DATEPART(MONTH,BirthDate)= Month(GETDATE()) ";
+        DataSet ds33 = g.ReturnData1(query33);
+
+        grdbirththismonth.DataSource = ds33.Tables[0];
+        grdbirththismonth.DataBind();
+        //ModBirthday.Show();
+        //divsend.Visible = false;
+        //lbltitlebirth.Text = "This Month Birth Day Employee List";
+
+    }
+
+
+    private void BindTodayBirth()
+    {
+
+        string query44 = "Select  EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName, MasterDeptTB.DeptName,CONVERT(varchar,BirthDate,103) AS BirthDate from EmployeeTB left outer join MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId where DATEPART(DD,BirthDate)=Day(GETDATE()) AND DATEPART(MM,BirthDate) =MONTH (GETDATE()) ";
+        DataSet ds44 = g.ReturnData1(query44);
+
+        grdbirthtodaysbirth.DataSource = ds44.Tables[0];
+        grdbirthtodaysbirth.DataBind();
+        //ModBirthday.Show();
+        //divsend.Visible = true;
+        //lbltitlebirth.Text = "Today's Birth Day Employee List";
+
+    }
+
+
+    private void BindToday6monthComp()
+    {
+
+        string querytodaygrd = "Declare @Month int Declare @Year int SELECT  @Month=Datepart(M,GETDATE()) - 6,@Year=Datepart(YYYY,GETDATE()) if @Month <= 0 BEGIN set @Month=12 + @Month print Convert(nvarchar(MAX),@Month) set @Year=@Year -1 print Convert(nvarchar(MAX),@Year) END SELECT EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName , MasterDeptTB.DeptName, CONVERT(varchar,DOJ,103) AS DOJ from EmployeeTB left outer join MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId  where DATEPART(M,doj)=@Month AND DATEPART(YYYY,DOJ)=@Year AND DATEPART(DD,DOJ)=Day  (GETDATE()) ";
+        DataSet dsqq = g.ReturnData1(querytodaygrd);
+        DataTable dtqq = dsqq.Tables[0];
+        grd6month.DataSource = dsqq.Tables[0];
+        grd6month.DataBind();
+        //ModView6month.Show();
+        //divsendcomp.Visible = true;
+        //lbltitle.Text = "Today's Six Month Completed Employee List";
+
+
+    }
+    public override void VerifyRenderingInServerForm(Control control)
+    {
+        /*Verifies that the control is rendered */
+    }
+
+
+    private void Bindtoday1yearComp()
+    {
+
+        
+        string querytodayyeargrd = "Declare @Month int Declare @Year int SELECT  @Month=Datepart(M,GETDATE()) - 12,@Year=Datepart(YYYY,GETDATE()) if @Month <= 0 BEGIN set @Month=12 + @Month print Convert(nvarchar(MAX),@Month) set @Year=@Year -1 print Convert(nvarchar(MAX),@Year) END SELECT EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName , MasterDeptTB.DeptName, CONVERT(varchar,DOJ,103) AS DOJ from EmployeeTB left outer join MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId  where DATEPART(M,doj)=@Month AND DATEPART(YYYY,DOJ)=@Year AND DATEPART(DD,DOJ)=Day  (GETDATE()) ";
+        DataSet dsqqyear = g.ReturnData1(querytodayyeargrd);
+        //    DataTable dtqqyear = dsqqyear.Tables[0];
+        grd1year.DataSource = dsqqyear.Tables[0];
+        grd1year.DataBind();
+
+
+    }
+
+
+    private void SendMail()
+    {
+        try
+        {
+            SMTPSettingsTB smtpData = HR.SMTPSettingsTBs.FirstOrDefault();
+            MailMessage objMail = new MailMessage();
+            System.Net.Mail.MailMessage mail = new System.Net.Mail.MailMessage();
+
+            DataSet dss = g.ReturnData1("select Email From EmployeeTB where Email <> 'NULL'");
+            for (int i = 0; i < dss.Tables[0].Rows.Count; i++)
+            {
+                string email = dss.Tables[0].Rows[i]["Email"].ToString();
+                mail.To.Add(email);
+            }
+            mail.From = new System.Net.Mail.MailAddress(smtpData.emailFromAddress);
+            mail.Subject = "Happy BirthDay";
+            BindMailGrd();
+            //  grddisp.DataSource = tbl;
+            //   mail.Body = GridViewToHtml(grddisp);
+            mail.IsBodyHtml = true;
+            System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient();
+            smtp.Host = "smtp.gmail.com";
+            smtp.Credentials = new System.Net.NetworkCredential(smtpData.emailFromAddress,smtpData.emailFromPassword);
+            smtp.EnableSsl = true;
+            smtp.Port = 587;
+            smtp.Send(mail);
+            g.ShowMessage(this.Page, "Mail Send Successfully");
+
+
+        }
+        catch (Exception ex)
+        {
+            string str = "Send Email Failed." + ex.Message;
+        }
+    }
+
+    private void BindMailGrd()
+    {
+        //if (grdbirth.Rows.Count > 0)
+        //{
+        //    DataSet dt = g.ReturnData1("Select  EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName, MasterDeptTB.DeptName,CONVERT(varchar,BirthDate,103) AS BirthDate from EmployeeTB left outer join MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId where DATEPART(DD,BirthDate)=Day(GETDATE()) AND DATEPART(MM,BirthDate) =MONTH (GETDATE()) ");
+        //                if (dt.Tables[0].Rows.Count==0)
+        //                {
+
+        //                }
+        //                else
+        //                {
+        //                    for (int j = 0; j < dt.Tables[0].Rows.Count; j++)
+        //                 {
+        //                dr = tbl.NewRow();
+        //                dr[0] =  dt.Tables[0].Rows[j]["EmployeeName"];
+        //                dr[1] =  dt.Tables[0].Rows[j]["DeptName"];
+        //                dr[2] =  dt.Tables[0].Rows[j]["BirthDate"];
+        //                tbl.Rows.Add(dr);
+        //                }
+        //                    //tbl.Columns.Add(new DataColumn("EmpName", typeof(string)));
+        //                    //tbl.Columns.Add(new DataColumn("Department", typeof(string)));
+        //                    //tbl.Columns.Add(new DataColumn("BirthDate", typeof(string)));
+        //                Session["id"] = tbl;
+        //                 //new grid for Mail
+        //                grddisp.DataSource = Session["id"];
+        //                grddisp.DataBind();
+
+        //             //  }
+        //        }
+        //   }
+    }
+    private string GridViewToHtml(GridView grdbirth)
+    {
+
+        StringBuilder sb = new StringBuilder();
+        StringWriter sw = new StringWriter(sb);
+        HtmlTextWriter hw = new HtmlTextWriter(sw);
+
+        if (tbl != null)
+        {
+            grdbirth.DataSource = tbl;
+            grdbirth.DataBind();
+        }
+        else
+        {
+            BindMailGrd();
+        }
+        //BindMailGrd();
+        grdbirth.AllowPaging = false;
+        grdbirth.RenderControl(hw);
+
+        return sb.ToString();
+    }
+    protected void btnsendmail_Click(object sender, EventArgs e)
+    {
+        SendMail();
+        // ModBirthday.Show();
+    }
+    protected void btnsendcomp_Click(object sender, EventArgs e)
+    {
+        //if (HiddenField1.Value =="1")
+        //{
+        //     SendMail1();
+        //}
+        //else if (HiddenField1.Value=="2")
+        //{
+        //    SendMail2();
+        //}
+
+    }
+
+
+
+
+    private string GridViewToHtml1(GridView grd6month)
+    {
+
+        StringBuilder sb = new StringBuilder();
+        StringWriter sw = new StringWriter(sb);
+        HtmlTextWriter hw = new HtmlTextWriter(sw);
+
+        if (tblcompmonth != null)
+        {
+            grd6month.DataSource = tblcompmonth;
+            grd6month.DataBind();
+        }
+        else
+        {
+            //  BindMailGrdCompmonth();
+        }
+        //BindMailGrd();
+        grd6month.AllowPaging = false;
+        grd6month.RenderControl(hw);
+
+        return sb.ToString();
+    }
+
+
+
+
+    private void BindMailGrdCompYear()
+    {
+        //if (grd6month.Rows.Count > 0)
+        //{
+
+        //    DataSet dt = g.ReturnData1("Declare @Month int Declare @Year int SELECT  @Month=Datepart(M,GETDATE()) - 12,@Year=Datepart(YYYY,GETDATE()) if @Month <= 0 BEGIN set @Month=12 + @Month print Convert(nvarchar(MAX),@Month) set @Year=@Year -1 print Convert(nvarchar(MAX),@Year) END SELECT EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName , MasterDeptTB.DeptName, CONVERT(varchar,DOJ,103) AS DOJ from EmployeeTB left outer join MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId  where DATEPART(M,doj)=@Month AND DATEPART(YYYY,DOJ)=@Year AND DATEPART(DD,DOJ)=Day  (GETDATE()) ");
+        //    if (dt.Tables[0].Rows.Count == 0)
+        //    {
+
+        //    }
+        //    else
+        //    {
+        //        for (int j = 0; j < dt.Tables[0].Rows.Count; j++)
+        //        {
+        //            dr = tblcomponeyear.NewRow();
+        //            dr[0] = dt.Tables[0].Rows[j]["EmployeeName"];
+        //            dr[1] = dt.Tables[0].Rows[j]["DeptName"];
+        //            dr[2] = dt.Tables[0].Rows[j]["DOJ"];
+        //            tblcomponeyear.Rows.Add(dr);
+        //        }
+        //        Session["id"] = tblcomponeyear;
+        //        grddisp.DataSource = Session["id"];
+        //        grddisp.DataBind();
+
+        //    }
+        //}
+    }
+
+
+
+
+    private void BindallthisMonthPassportExpiryList()
+    {
+        if (ddmonth.SelectedIndex > 0 && ddyearPassport.SelectedIndex > 0)
+        {
+            string query33 = " select  EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName, MasterDeptTB.DeptName,CONVERT(varchar,PassportExpiryDate,103) AS PassportExpiryDate,PassportNo  from EmployeeTB left outer join MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId where DATEPART(MONTH,PassportExpiryDate)='" + ddmonth.SelectedValue + "' And DATEPART(Year,PassportExpiryDate)= '" + ddyearPassport.SelectedValue + "' ";
+            DataSet ds33 = g.ReturnData1(query33);
+            //   DataTable dt33 = ds33.Tables[0];
+            if (ds33.Tables[0].Rows.Count > 0)
+            {
+                Grd_Password_Listthismonth.DataSource = ds33.Tables[0];
+                Grd_Password_Listthismonth.DataBind();
+                btnpassportPrint.Enabled = true;
+            }
+            else
+            {
+                Grd_Password_Listthismonth.DataSource = null;
+                Grd_Password_Listthismonth.DataBind();
+                btnpassportPrint.Enabled = false;
+            }
+
+
+        }
+        else
+        {
+            Grd_Password_Listthismonth.DataSource = null;
+            Grd_Password_Listthismonth.DataBind();
+            btnpassportPrint.Enabled = false;
+        }
+
+
+    }
+
+
+    private void BindallthisMonthVisaExpiryList()
+    {
+        if (ddmonthvisa.SelectedIndex > 0 && ddyearVisa.SelectedIndex > 0)
+        {
+
+            string query33 = " select  EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName, MasterDeptTB.DeptName,CONVERT(varchar,VisaExpiryDate,103) AS VisaExpiryDate,VisaNo  from EmployeeTB left outer join MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId where DATEPART(MONTH,VisaExpiryDate)= '" + ddmonthvisa.SelectedValue + "' And DATEPART(YEAR,VisaExpiryDate)='" + ddyearVisa.SelectedValue + "'  ";
+
+            DataSet ds33 = g.ReturnData1(query33);
+            if (ds33.Tables[0].Rows.Count > 0)
+            {
+                grd_VisaExpiryListthismonth.DataSource = ds33.Tables[0];
+                grd_VisaExpiryListthismonth.DataBind();
+                btnVisaPrint.Enabled = true;
+            }
+            else
+            {
+                grd_VisaExpiryListthismonth.DataSource = null;
+                grd_VisaExpiryListthismonth.DataBind();
+                btnVisaPrint.Enabled = false;
+            }
+
+        }
+        else
+        {
+            grd_VisaExpiryListthismonth.DataSource = null;
+            grd_VisaExpiryListthismonth.DataBind();
+            btnVisaPrint.Enabled = false;
+        }
+        ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "text", "Javascript:activateTab('tab_1')", true);
+    }
+    private void BindTodaysVisaExpiryList()
+    {
+
+        string query33 = "Select  EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName, MasterDeptTB.DeptName,CONVERT(varchar,VisaExpiryDate,103)  AS VisaExpiryDate,VisaNo from EmployeeTB left outer join  MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId  where DATEPART(DD,VisaExpiryDate)=Day(GETDATE()) AND DATEPART(MM,VisaExpiryDate) =MONTH (GETDATE()) ";
+        DataSet ds33 = g.ReturnData1(query33);
+        //  DataTable dt33 = ds33.Tables[0];
+        grd_VisaExpiryListtodays.DataSource = ds33.Tables[0];
+        grd_VisaExpiryListtodays.DataBind();
+
+        ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "text", "Javascript:activateTab('tab_1')", true);
+    }
+    private void BindTodaysPassportExpiryList()
+    {
+
+        string query33 = "Select  EmployeeId,case when Solitude=0 then 'Mr' else 'Ms' end+' '+FName+' '+ Case When MName IS null Then ' ' Else MName end +' '+ Lname as EmployeeName, MasterDeptTB.DeptName,CONVERT(varchar,PassportExpiryDate,103)  AS PassportExpiryDate,PassportNo from EmployeeTB left outer join  MasterDeptTB on MasterDeptTB.DeptID =EmployeeTB.DeptId  where DATEPART(DD,PassportExpiryDate)=Day(GETDATE()) AND DATEPART(MM,PassportExpiryDate) =MONTH (GETDATE()) ";
+        DataSet ds33 = g.ReturnData1(query33);
+        //   DataTable dt33 = ds33.Tables[0];
+        Grd_Password_Listtodays.DataSource = ds33.Tables[0];
+        Grd_Password_Listtodays.DataBind();
+        ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "text", "Javascript:activateTab('tab_1')", true);
+    }
+    protected void BtnBack_Click(object sender, EventArgs e)
+    {
+        //ModalPopupPassportList.Show();
+        //Mult1.ActiveViewIndex = 0;
+    }
+
+    protected void BtnBack1_Click(object sender, EventArgs e)
+    {
+        //ModalPopupVisaList.Show();
+        //MultiView1.ActiveViewIndex = 0;
+    }
+
+    protected void ddcompanywise_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+        ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "text", "Javascript:activateTab('tab_2')", true);
+
+    }
+    protected void ddcompanywise_SelectedIndexChanged1(object sender, EventArgs e)
+    {
+        BindChartdata();
+        ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "text", "Javascript:activateTab('tab_2')", true);
+    }
+
+    private void BindChartdata()
+    {
+
+        // Employee Companywise Details
+        ////MANASI
+        ////    string query = "select COUNT(E.EmployeeId) Employeecount,CompanyName from EmployeeTB  E  left outer join CompanyInfoTB MC on MC.CompanyId=E.CompanyId where MC.Status=0 group by CompanyName";
+        string query = "";
+        //if (ddcompanywise.SelectedIndex > 0)
+        //{
+        query = "select COUNT(E.EmployeeId) Employeecount,CompanyName from EmployeeTB  E  left outer join compaNYiNFOTB MC on MC.CompanyId=E.CompanyId where MC.Status=0  group by CompanyName";
+        //query = "select COUNT(E.EmployeeId) Employeecount,CompanyName from EmployeeTB  E  left outer join CompanyInfoTB MC on MC.CompanyId=E.CompanyId where MC.Status=0  and E.CompanyId='" + ddcompanywise.SelectedItem.Value + "' group by CompanyName";
+        // }
+        DataSet ds = g.ReturnData1(query);
+
+
+        DataTable dttemp = new DataTable();
+        dttemp.Columns.Add("CompanyName");
+        dttemp.Columns.Add("Employeecount");
+
+        for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
+        {
+            for (int j = 0; j < ds.Tables[0].Columns.Count - 2; j++)
+            {
+                DataRow dr = dttemp.NewRow();
+                //   dr["CompanyName"] = ds.Tables[0].Columns[j + 2].ColumnName;
+                dr["Employeecount"] = ds.Tables[0].Columns[j + 2].DefaultValue.ToString();
+
+            }
+        }
+
+
+
+        Chart1.DataSource = ds.Tables[0];
+        Chart1.DataBind();
+        // End Employee Companywise Details
+
+
+        /*  Gender Details */
+
+
+
+
+        string querygender1 = "select (select count(*) male from EmployeeTB where Gender='Male' ) Male , (select count(*) male from EmployeeTB where Gender='female' ) female";
+        string querygender = "select (select count(*) male from EmployeeTB where Gender='0' ) Male , (select count(*) male from EmployeeTB where Gender='1' ) female";
+        DataSet dsgender = g.ReturnData1(querygender);
+        double[] yValues = { Convert.ToDouble(dsgender.Tables[0].Rows[0]["Male"]), Convert.ToDouble(dsgender.Tables[0].Rows[0]["FeMale"]) };
+        string[] xValues = { "Male", "Female" };
+        Chart2.Series["Default"].Points.DataBindXY(xValues, yValues);
+        Chart2.Series["Default"].Points[0].Color = Color.Orange;
+        Chart2.Series["Default"].Points[1].Color = Color.Green;
+
+        if (ddcompanywise.SelectedIndex > 0)
+        {
+            querygender1 = "select (select count(*) male from EmployeeTB where Gender='0' and CompanyId='" + ddcompanywise.SelectedItem.Value + "') Male , (select count(*) male from EmployeeTB where Gender='1' and CompanyId='" + ddcompanywise.SelectedItem.Value + "') female";
+        }
+        DataSet dsgender1 = g.ReturnData1(querygender1);
+        double[] yValues1 = { Convert.ToDouble(dsgender1.Tables[0].Rows[0]["Male"]), Convert.ToDouble(dsgender1.Tables[0].Rows[0]["FeMale"]) };
+        string[] xValues1 = { "Male", "Female" };
+        Chart3.Series["Default"].Points.DataBindXY(xValues1, yValues1);
+        Chart3.Series["Default"].Points[0].Color = Color.Orange;
+        Chart3.Series["Default"].Points[1].Color = Color.Green;
+        #region
+        //Chart3.Series["Default"].Points.DataBindXY(xValues, yValues);
+        Chart3.Series["Default"].Points[0].Color = Color.Orange;
+        Chart3.Series["Default"].Points[1].Color = Color.Green;
+        this.Chart3.Series[0]["PieLabelStyle"] = "Outside";
+        Chart3.Series["Default"].ChartType = SeriesChartType.Pie;
+        Chart3.Series["Default"]["PieLabelStyle"] = "Disabled";
+        Chart3.ChartAreas["ChartArea1"].Area3DStyle.Enable3D = true;
+        this.Chart3.Series[0]["PieLabelStyle"] = "Outside";
+        // Set border width so that labels are shown on the outside
+        this.Chart3.Series[0].BorderWidth = 1;
+        this.Chart3.Series[0].BorderColor = System.Drawing.Color.FromArgb(26, 59, 105);
+        // Add a legend to the chart and dock it to the bottom-center
+        this.Chart3.Legends.Add("Legend1");
+        this.Chart3.Legends[0].Enabled = true;
+        this.Chart3.Legends[0].Docking = Docking.Bottom;
+        this.Chart3.Legends[0].Alignment = System.Drawing.StringAlignment.Center;
+        // Set the legend to display pie chart values as percentages
+        // Again, the P2 indicates a precision of 2 decimals
+        // By sorting the data points, they show up in proper ascending order in the legend
+        this.Chart3.DataManipulator.Sort(PointSortOrder.Descending, Chart3.Series[0]);
+        #endregion
+        #region
+        this.Chart2.Series[0]["PieLabelStyle"] = "Outside";
+        Chart2.Series["Default"].ChartType = SeriesChartType.Pie;
+        Chart2.Series["Default"]["PieLabelStyle"] = "Disabled";
+        Chart2.ChartAreas["ChartArea1"].Area3DStyle.Enable3D = true;
+        this.Chart2.Series[0]["PieLabelStyle"] = "Outside";
+        // Set border width so that labels are shown on the outside
+        this.Chart2.Series[0].BorderWidth = 1;
+        this.Chart2.Series[0].BorderColor = System.Drawing.Color.FromArgb(26, 59, 105);
+        // Add a legend to the chart and dock it to the bottom-center
+        this.Chart2.Legends.Add("Legend1");
+        this.Chart2.Legends[0].Enabled = true;
+        this.Chart2.Legends[0].Docking = Docking.Bottom;
+        this.Chart2.Legends[0].Alignment = System.Drawing.StringAlignment.Center;
+        // Set the legend to display pie chart values as percentages
+        // Again, the P2 indicates a precision of 2 decimals
+        // By sorting the data points, they show up in proper ascending order in the legend
+        this.Chart2.DataManipulator.Sort(PointSortOrder.Descending, Chart2.Series[0]);
+        // End Gender Details
+        #endregion
+        /*  Department Details */
+        string querydept = "select COUNT(E.EmployeeId) Employeecount,DeptName from EmployeeTB  E   left outer join CompanyInfoTB MC on MC.CompanyId=E.CompanyId  left outer join MasterDeptTB MD on MD.DeptID=E.DeptId where MD.Status=0 group by DeptName ";
+        if (ddcompanywise.SelectedIndex > 0)
+        {
+            querydept = "select COUNT(E.EmployeeId) Employeecount,DeptName from EmployeeTB  E   left outer join CompanyInfoTB MC on MC.CompanyId=E.CompanyId  left outer join MasterDeptTB MD on MD.DeptID=E.DeptId where MD.Status=0  and E.CompanyId='" + ddcompanywise.SelectedItem.Value + "' group by DeptName ";
+        }
+        DataSet dsdept = g.ReturnData1(querydept);
+        DataTable dttempdept = new DataTable();
+        dttempdept.Columns.Add("DeptName");
+        dttempdept.Columns.Add("Employeecount");
+        for (int i = 0; i < dsdept.Tables[0].Rows.Count; i++)
+        {
+            for (int j = 0; j < dsdept.Tables[0].Columns.Count - 2; j++)
+            {
+                DataRow dr = dttempdept.NewRow();
+                dr["DeptName"] = dsdept.Tables[0].Columns[j + 2].ColumnName;
+                dr["Employeecount"] = dsdept.Tables[0].Columns[j + 2].DefaultValue.ToString();
+            }
+        }
+        chartdepartmentwise.DataSource = dsdept.Tables[0];
+        chartdepartmentwise.DataBind();
+        // End  Department Details
+    }
+    protected void ddcompanywise_SelectedIndexChanged2(object sender, EventArgs e)
+    {
+        BindChartdata();
+        ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "text", "Javascript:activateTab('tab_2')", true);
+    }
+    protected void btnshow_Click(object sender, EventArgs e)
+    {
+        DisplayData();
+        ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "text", "Javascript:activateTab('tab_3')", true);
+    }
+
+    private void DisplayData()
+    {
+        #region
+        /*  Employee Head Count MonthWise Details */
+        //MANASI
+
+        //   string querymonth = "select COUNT(*) EmployeeCount,SUBSTRING(DATENAME(MONTH, DOJ),0,4) Month ,DATENAME(YEAR, DOJ),DATEPART(MM,Doj)  Year from EmployeeTB where CONVERT(date,DOJ,101) between '" + txtfromdate.Text + "' and '" + txttodate.Text + "' group by DATENAME(MONTH, DOJ) ,DATENAME(YEAR, DOJ),DATEPART(MM,Doj) order by DATENAME(YEAR, DOJ),DATEPART(MM,Doj) asc ";
+        string querymonth = "select (select COUNT(*) EmployeeCount from EmployeeTB E where E.RelivingStatus is NULL and DATENAME(YEAR, E.DOJ) <='" + ddyear.SelectedItem.Text + "')-COUNT(*) EmployeeCount,SUBSTRING(DATENAME(MONTH, DOJ),0,4) Month ,DATENAME(YEAR, DOJ) year,DATEPART(MM,Doj)  Month from EmployeeTB where DATENAME(YEAR, DOJ) ='" + ddyear.SelectedItem.Text + "' and RelivingStatus is NULL  group by DATENAME(MONTH, DOJ) ,DATENAME(YEAR, DOJ),DATEPART(MM,Doj) order by DATENAME(YEAR, DOJ),DATEPART(MM,Doj) asc ";
+        if (ddempmonthcompnay.SelectedIndex > 0)
+        {
+            // querymonth = "select COUNT(*) EmployeeCount,SUBSTRING(DATENAME(MONTH, DOJ),0,4) Month ,DATENAME(YEAR, DOJ),DATEPART(MM,Doj)  Year from EmployeeTB where CONVERT(date,DOJ,101) between '" + txtfromdate.Text + "' and '" + txttodate.Text + "' and CompanyId='" + ddempmonthcompnay.SelectedItem.Value + "'group by DATENAME(MONTH, DOJ) ,DATENAME(YEAR, DOJ),DATEPART(MM,Doj) order by DATENAME(YEAR, DOJ),DATEPART(MM,Doj) asc ";
+            querymonth = "select (select COUNT(*) EmployeeCount from EmployeeTB E where E.RelivingStatus is NULL and DATENAME(YEAR, E.DOJ)<='" + ddyear.SelectedItem.Text + "' and  e.CompanyId='" + ddempmonthcompnay.SelectedItem.Value + "')-COUNT(*) EmployeeCount,SUBSTRING(DATENAME(MONTH, DOJ),0,4) Month ,DATENAME(YEAR, DOJ) year,DATEPART(MM,Doj)  Month from EmployeeTB where DATENAME(YEAR, DOJ) ='" + ddyear.SelectedItem.Text + "' and RelivingStatus is NULL  and CompanyId='" + ddempmonthcompnay.SelectedItem.Value + "' group by DATENAME(MONTH, DOJ) ,DATENAME(YEAR, DOJ),DATEPART(MM,Doj) order by DATENAME(YEAR, DOJ),DATEPART(MM,Doj) asc ";
+        }
+        DataSet dsmonthemp = g.ReturnData1(querymonth);
+
+
+        DataTable dttempmonth = new DataTable();
+        dttempmonth.Columns.Add("Month");
+        dttempmonth.Columns.Add("Employeecount");
+
+        for (int i = 0; i < dsmonthemp.Tables[0].Rows.Count; i++)
+        {
+            for (int j = 0; j < dsmonthemp.Tables[0].Columns.Count - 2; j++)
+            {
+                DataRow dr = dttempmonth.NewRow();
+                dr["Month"] = dsmonthemp.Tables[0].Columns[j + 1].ColumnName;
+                dr["Employeecount"] = dsmonthemp.Tables[0].Columns[j + 2].DefaultValue.ToString();
+
+            }
+        }
+
+        charempcount.DataSource = dsmonthemp.Tables[0];
+        charempcount.DataBind();
+
+        // End  Department Details
+
+
+        /* Total Gross Salary Details */
+        // string querymonthsal = "select SUM(convert( decimal,NetSlary)) Salary,SUBSTRING(DATENAME(MONTH, convert(date,(s.Month+'/01/'+S.Year),101)),0,4) Month from SalaryProcessTB S  where convert(date,(s.Month+'/01/'+S.Year),101) between'" + txtfromdate.Text + "' and '" + txttodate.Text + "' group by  s.Month,s.Year ";
+        string querymonthsal = "select SUM(convert( decimal,NetSlary)) Salary,SUBSTRING(DATENAME(MONTH, convert(date,(s.Month+'/01/'+S.Year),101)),0,4) Month from SalaryProcessTB S  where s.Year='" + ddyear.SelectedItem.Text + "' group by  s.Month,s.Year ";
+        if (ddempmonthcompnay.SelectedIndex > 0)
+        {
+            querymonthsal = "select SUM(convert( decimal,NetSlary)) Salary,SUBSTRING(DATENAME(MONTH, convert(date,(s.Month+'/01/'+S.Year),101)),0,4) Month from SalaryProcessTB S  left outer join EmployeeTB E on E.EmployeeId=S.EmployeeID  where E.CompanyId= '" + ddempmonthcompnay.SelectedValue + "' and s.Year='" + ddyear.SelectedItem.Text + "' group by  s.Month,s.Year ";
+        }
+        DataSet dsmonthempsal = g.ReturnData1(querymonthsal);
+
+
+        DataTable dttempmonthsal = new DataTable();
+        dttempmonthsal.Columns.Add("Month");
+        dttempmonthsal.Columns.Add("Salary");
+
+        for (int i = 0; i < dsmonthemp.Tables[0].Rows.Count; i++)
+        {
+            for (int j = 0; j < dsmonthemp.Tables[0].Columns.Count - 2; j++)
+            {
+                DataRow dr = dttempmonthsal.NewRow();
+                //dr["Month"] = dsmonthempsal.Tables[0].Columns[j + 1].ColumnName;
+                //dr["Salary"] = dsmonthempsal.Tables[0].Columns[j + 2].DefaultValue.ToString();
+
+            }
+        }
+
+        chartsalary.DataSource = dsmonthempsal.Tables[0];
+        chartsalary.DataBind();
+
+        // End  Total Gross Salary  Details
+        string queryLeave = "select E.EmployeeId,E.FName+' '+Lname employeename,COUNT(Duration) Days from EmployeeTB E  left outer join tblLeaveApplication  L on E.EmployeeId =L.employeeID where L.approval ='Approved'  and dateName(YYYY,L.LeaveApllicationDate)='" + ddyear.Text + "' group by E.EmployeeId,E.FName,Lname order by count(Duration) desc";
+        if (ddempmonthcompnay.SelectedIndex > 0)
+        {
+            querymonthsal = "select E.EmployeeId,E.FName+' '+Lname employeename,COUNT(Duration) Days from EmployeeTB E  left outer join tblLeaveApplication  L on E.EmployeeId =L.employeeID where L.approval ='Approved'  and E.CompanyId = '" + ddempmonthcompnay.SelectedValue + "' and dateName(YYYY,L.LeaveApllicationDate)='" + ddyear.Text + "' group by E.EmployeeId,E.FName,Lname order by count(Duration) desc";
+        }
+
+        DataSet dsleave = g.ReturnData1(queryLeave);
+        grdleave.DataSource = dsleave.Tables[0];
+        grdleave.DataBind();
+        ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "text", "Javascript:activateTab('tab_3')", true);
+        #endregion
+    }
+
+    #region Bind sort by Passport expiry date & print method.By Abdul Rahman
+    protected void ddmonth_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindallthisMonthPassportExpiryList();
+    }
+    protected void ddyearPassport_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindallthisMonthPassportExpiryList();
+    }
+
+    protected void btnpassportPrint_Click(object sender, EventArgs e)
+    {
+        if (Grd_Password_Listthismonth.Rows.Count > 0)
+        {
+
+            //Grd_Password_Listthismonth.PagerSettings.Visible = false;
+            BindallthisMonthPassportExpiryList();
+            StringWriter sw = new StringWriter();
+           // Panel7.Attributes.Add("style", "width: 1000px; height:50px;");
+            HtmlTextWriter hw = new HtmlTextWriter(sw);
+            Grd_Password_Listthismonth.RenderControl(hw);
+            string gridHTML = sw.ToString().Replace("\"", "'")
+                .Replace(System.Environment.NewLine, "");
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<script type = 'text/javascript'>");
+            sb.Append("window.onload = new function(){");
+            sb.Append("var printWin = window.open('', '', 'left=0");
+            sb.Append(",top=0,width=1000,height=600,status=0');");
+            sb.Append("printWin.document.write(\"");
+            sb.Append(gridHTML);
+            sb.Append("\");");
+            sb.Append("printWin.document.close();");
+            sb.Append("printWin.focus();");
+            sb.Append("printWin.print();");
+            sb.Append("printWin.close();};");
+            sb.Append("</script>");
+            ClientScript.RegisterStartupScript(this.GetType(), "GridPrint", sb.ToString());
+            //Grd_Password_Listthismonth.PagerSettings.Visible = true;
+
+        }
+       BindallthisMonthPassportExpiryList();
+    }
+
+    #endregion Bind Passport expiry date & print method
+
+    protected void ddmonthvisa_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindallthisMonthVisaExpiryList();
+    }
+    protected void ddyearVisa_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindallthisMonthVisaExpiryList();
+    }
+
+    protected void btnVisaPrint_Click(object sender, EventArgs e)
+    {
+        if (Grd_Password_Listthismonth.Rows.Count > 0)
+        {
+
+            grd_VisaExpiryListthismonth.PagerSettings.Visible = false;
+            BindallthisMonthVisaExpiryList();
+            StringWriter sw = new StringWriter();
+           // Panel8.Attributes.Add("style", "width: 1000px; height:50px;");
+            HtmlTextWriter hw = new HtmlTextWriter(sw);
+            grd_VisaExpiryListthismonth.RenderControl(hw);
+            string gridHTML = sw.ToString().Replace("\"", "'")
+                .Replace(System.Environment.NewLine, "");
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<script type = 'text/javascript'>");
+            sb.Append("window.onload = new function(){");
+            sb.Append("var printWin = window.open('', '', 'left=0");
+            sb.Append(",top=0,width=1000,height=600,status=0');");
+            sb.Append("printWin.document.write(\"");
+            sb.Append(gridHTML);
+            sb.Append("\");");
+            sb.Append("printWin.document.close();");
+            sb.Append("printWin.focus();");
+            sb.Append("printWin.print();");
+            sb.Append("printWin.close();};");
+            sb.Append("</script>");
+            ClientScript.RegisterStartupScript(this.GetType(), "GridPrint", sb.ToString());
+            grd_VisaExpiryListthismonth.PagerSettings.Visible = true;
+
+        }
+        // BindallthisMonthVisaExpiryList();
+    }
+    protected void grd_VisaExpiryListthismonth_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grd_VisaExpiryListthismonth.PageIndex = e.NewPageIndex;
+        BindallthisMonthVisaExpiryList();
+    }
+    protected void Grd_Password_Listthismonth_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        Grd_Password_Listthismonth.PageIndex = e.NewPageIndex;
+        BindallthisMonthPassportExpiryList();
+    }
+
+
+    private void BindChartCandidateByAgency()
+    {
+
+        DataTable dtviewcount = null;
+        ViewState["dtviewcount"] = null;
+        DataTable dtfetchCandId = g.ReturnData("Select n.CandidateId, sc.ScheduleId, sc.Date AS ScheduleDate from InterviewResultTB n Left outer join ScheduleTB sc on n.ScheduleId=sc.ScheduleId");
+        if (dtfetchCandId.Rows.Count > 0)
+        {
+            for (int i = 0; i < dtfetchCandId.Rows.Count; i++)
+            {
+                DataTable dtrefrenceby = g.ReturnData("Select Refrence_By, EmployeeID, AgencyId from CandidateTB Where Candidate_ID='" + Convert.ToInt32(dtfetchCandId.Rows[i]["CandidateId"].ToString()) + "'");
+                //for (int j = 0; j < dtrefrenceby.Rows.Count; j++)
+                //{
+
+                if (dtrefrenceby.Rows[0]["Refrence_By"].ToString() == "Agency")
+                {
+                    #region code for Agency reference
+                    DataTable dtagency = g.ReturnData("select distinct 'Agency' Generatedby,A.AgencyName,(select count(SD.VacancyId) from ScheduleDetailsTB SD where SD.VacancyId=ITB.VacancyId and SD.CandidateID=ITB.CandidateID ) as ScheduleCnt,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Selected' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID ) as Selected,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Rejected' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID) as Rejected,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Hold' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID ) as Hold from InterviewResultTB ITB  left outer join VancancyTB on ITB.VacancyId=VancancyTB.VacancyID  left outer join ScheduleTB SC on ITB.ScheduleId=SC.ScheduleId Left outer join CompanyInfoTB CT on ITB.CompanyID=CT.CompanyId  Left outer join CandidateTB C  on ITB.CandidateId=C.Candidate_ID left outer join AgencyMasterTB A on C.AgencyId=A.AgencyId where C.AgencyId  is not null order by A.AgencyName");
+
+                    if (ViewState["dtviewcount"] != null)
+                    {
+                        dtviewcount = (DataTable)ViewState["dtviewcount"];
+                    }
+                    else
+                    {
+                        dtviewcount = new DataTable();
+                        DataColumn Generatedby = dtviewcount.Columns.Add("Generatedby");
+                        DataColumn ScheduleCnt = dtviewcount.Columns.Add("ScheduleCnt");
+                        DataColumn Selected = dtviewcount.Columns.Add("Selected");
+                        DataColumn Rejected = dtviewcount.Columns.Add("Rejected");
+                        DataColumn Hold = dtviewcount.Columns.Add("Hold");
+
+                    }
+                    DataRow dr = dtviewcount.NewRow();
+                    dr[0] = dtagency.Rows[0]["Generatedby"].ToString();
+                    dr[1] = dtagency.Rows[0]["ScheduleCnt"].ToString();
+                    dr[2] = dtagency.Rows[0]["Selected"].ToString();
+                    dr[3] = dtagency.Rows[0]["Rejected"].ToString();
+                    dr[4] = dtagency.Rows[0]["Hold"].ToString();
+                    if (dtviewcount.Rows.Count > 0)
+                    {
+                        for (int f = 0; f < dtviewcount.Rows.Count; f++)
+                        {
+
+                            string u2 = dtviewcount.Rows[f][0].ToString();
+                            if (u2 == dtagency.Rows[0]["Generatedby"].ToString())
+                            {
+
+
+                                dr[0] = dtagency.Rows[0]["Generatedby"].ToString();
+                                dr[1] = Convert.ToInt32(dtagency.Rows[0]["ScheduleCnt"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][1].ToString());
+                                dr[2] = Convert.ToInt32(dtagency.Rows[0]["Selected"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][2].ToString());
+                                dr[3] = Convert.ToInt32(dtagency.Rows[0]["Rejected"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][3].ToString());
+                                dr[4] = Convert.ToInt32(dtagency.Rows[0]["Hold"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][4].ToString());
+                                dtviewcount.Rows[f].Delete();
+                            }
+                        }
+
+                        dtviewcount.Rows.Add(dr);
+
+
+                    }
+                    else
+                    {
+                        dtviewcount.Rows.Add(dr);
+
+                    }
+                    ViewState["dtviewcount"] = dtviewcount;
+                    #endregion
+
+                }
+            }
+            if (ViewState["dtviewcount"] != null)
+            {
+                double[] yValues = { Convert.ToDouble(dtviewcount.Rows[0]["Selected"]), Convert.ToDouble(dtviewcount.Rows[0]["ScheduleCnt"]), Convert.ToDouble(dtviewcount.Rows[0]["Rejected"]), Convert.ToDouble(dtviewcount.Rows[0]["Hold"]) };
+                string[] xValues = { "Selected", "ScheduleCnt", "Rejected", "Hold" };
+                Chart4.Series["Default"].Points.DataBindXY(xValues, yValues);
+                Chart4.Series["Default"].Points[0].Color = Color.Green;
+                Chart4.Series["Default"].Points[1].Color = Color.Yellow;
+                Chart4.Series["Default"].Points[2].Color = Color.Red;
+                Chart4.Series["Default"].Points[3].Color = Color.Blue;
+            }
+            else
+            {
+                Chart4.DataSource = null;
+                Chart4.DataBind();
+               // g.ShowMessage(this.Page, "There is no Data");
+            }
+        }
+    }
+
+    private void BindChartReferenceByEmployee()
+    {
+        //Reference by Employee DataBind.......................
+
+
+
+        DataTable dtviewcount = null;
+        ViewState["dtviewcount"] = null;
+        DataTable dtfetchCandId = g.ReturnData("Select n.CandidateId, sc.ScheduleId, sc.Date AS ScheduleDate from InterviewResultTB n Left outer join ScheduleTB sc on n.ScheduleId=sc.ScheduleId");
+        if (dtfetchCandId.Rows.Count > 0)
+        {
+            for (int i = 0; i < dtfetchCandId.Rows.Count; i++)
+            {
+                //DataTable dtrefrenceby = g.ReturnData("Select Refrence_By, EmployeeID, AgencyId from CandidateTB");
+                DataTable dtrefrenceby = g.ReturnData("Select Refrence_By, EmployeeID, AgencyId from CandidateTB Where Candidate_ID='" + Convert.ToInt32(dtfetchCandId.Rows[i]["CandidateId"].ToString()) + "'");
+
+                if (dtrefrenceby.Rows[0]["Refrence_By"].ToString() == "Employee")
+                {
+                    #region code for Employee reference
+                    DataTable dtEmp = g.ReturnData("select distinct 'Employee' Generatedby,E.Fname+' '+E.Lname as EmpName,(select count(SD.VacancyId) from ScheduleDetailsTB SD where SD.VacancyId=ITB.VacancyId and SD.CandidateID=ITB.CandidateID ) as ScheduleCnt,(select count(IT.VacancyId) from InterviewResultTB IT where (InterviewStatus='Selected' OR InterviewStatus='Offer' Or InterviewStatus='Join') and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID ) as Selected,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Rejected' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID) as Rejected,(select count(IT.VacancyId) from InterviewResultTB IT where InterviewStatus='Hold' and IT.VacancyId=ITB.VacancyId and IT.CandidateID=ITB.CandidateID ) as Hold from InterviewResultTB ITB  left outer join VancancyTB on ITB.VacancyId=VancancyTB.VacancyID  left outer join ScheduleTB SC on ITB.ScheduleId=SC.ScheduleId Left outer join CompanyInfoTB CT on ITB.CompanyID=CT.CompanyId  Left outer join CandidateTB C  on ITB.CandidateId=C.Candidate_ID left outer join EmployeeTB E on C.EmployeeID=E.EmployeeId where C.EmployeeID  is not null");
+
+                    int cnt2 = 0;
+                    if (ViewState["dtviewcount"] != null)
+                    {
+                        dtviewcount = (DataTable)ViewState["dtviewcount"];
+                    }
+                    else
+                    {
+                        dtviewcount = new DataTable();
+                        DataColumn Generatedby = dtviewcount.Columns.Add("Generatedby");
+                        DataColumn ScheduleCnt = dtviewcount.Columns.Add("ScheduleCnt");
+                        DataColumn Selected = dtviewcount.Columns.Add("Selected");
+                        DataColumn Rejected = dtviewcount.Columns.Add("Rejected");
+                        DataColumn Hold = dtviewcount.Columns.Add("Hold");
+
+                    }
+                    DataRow dr = dtviewcount.NewRow();
+                    dr[0] = dtEmp.Rows[0]["Generatedby"].ToString();
+                    dr[1] = dtEmp.Rows[0]["ScheduleCnt"].ToString();
+                    dr[2] = dtEmp.Rows[0]["Selected"].ToString();
+                    dr[3] = dtEmp.Rows[0]["Rejected"].ToString();
+                    dr[4] = dtEmp.Rows[0]["Hold"].ToString();
+                    if (dtviewcount.Rows.Count > 0)
+                    {
+                        for (int f = 0; f < dtviewcount.Rows.Count; f++)
+                        {
+
+                            string u2 = dtviewcount.Rows[f][0].ToString();
+                            if (u2 == dtEmp.Rows[0]["Generatedby"].ToString())
+                            {
+                                dr[0] = dtEmp.Rows[0]["Generatedby"].ToString();
+                                dr[1] = Convert.ToInt32(dtEmp.Rows[0]["ScheduleCnt"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][1].ToString());
+                                dr[2] = Convert.ToInt32(dtEmp.Rows[0]["Selected"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][2].ToString());
+                                dr[3] = Convert.ToInt32(dtEmp.Rows[0]["Rejected"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][3].ToString());
+                                dr[4] = Convert.ToInt32(dtEmp.Rows[0]["Hold"].ToString()) + Convert.ToInt32(dtviewcount.Rows[f][4].ToString());
+                                dtviewcount.Rows[f].Delete();
+
+                            }
+                        }
+
+
+                        dtviewcount.Rows.Add(dr);
+
+                    }
+                    else
+                    {
+                        dtviewcount.Rows.Add(dr);
+
+                    }
+                    ViewState["dtviewcount"] = dtviewcount;
+                    #endregion
+                }
+            }
+
+
+            if (ViewState["dtviewcount"] != null)
+            {
+
+                double[] yValues = { Convert.ToDouble(dtviewcount.Rows[0]["Selected"]), Convert.ToDouble(dtviewcount.Rows[0]["ScheduleCnt"]), Convert.ToDouble(dtviewcount.Rows[0]["Rejected"]), Convert.ToDouble(dtviewcount.Rows[0]["Hold"]) };
+                string[] xValues = { "Selected", "ScheduleCnt", "Rejected", "Hold" };
+                Chart5.Series["Default"].Points.DataBindXY(xValues, yValues);
+                Chart5.Series["Default"].Points[0].Color = Color.Green;
+                Chart5.Series["Default"].Points[1].Color = Color.Yellow;
+                Chart5.Series["Default"].Points[2].Color = Color.Red;
+                Chart5.Series["Default"].Points[3].Color = Color.Blue;
+            }
+            else
+            {
+                Chart5.DataSource = null;
+                Chart5.DataBind();
+                g.ShowMessage(this.Page, "There is no Data");
+            }
+        }
+    }
+
+    private void BindTodaysInterview()
+    {
+
+
+        DataTable TodayIntData = g.ReturnData("select ST.ScheduleId,CandidateTB.Name, ScheduleDetailsTB.ScheduleDetailsId,CompanyInfoTB.CompanyName,VancancyTB.Title as position,CandidateTB.Name as candidatename,ST.Date,ScheduleDetailsTB.FromTime,ScheduleDetailsTB.ToTime,ST.Vanue,ScheduleDetailsTB.Status from ScheduleTB ST left outer join ScheduleDetailsTB on ST.ScheduleId=ScheduleDetailsTB.ScheduleID left outer join CompanyInfoTB ON ST.CompanyId=CompanyInfoTB.CompanyId left outer join CandidateTB on ScheduleDetailsTB.CandidateId=CandidateTB.Candidate_ID left outer join VancancyTB on ScheduleDetailsTB.VacancyId=VancancyTB.vacancyid  where  Candidate_ID not in(select CandidateId from InterviewResultTB where  InterviewResultTB.InterviewStatus='Selected' or InterviewResultTB.InterviewStatus='Rejected' or InterviewResultTB.InterviewStatus='Offer' or InterviewResultTB.InterviewStatus='Offer Rejected' or InterviewResultTB.InterviewStatus='Join') and ST.Date='" + Convert.ToDateTime(txtDate.Text) + "'");
+        //var TodayIntData = from d in HR.InterviewTBs
+        //                   join dtt in HR.MasterDeptTBs on d.DeptID equals dtt.DeptID
+        //                   join dtDes in HR.MasterDesgTBs on d.positionDesignationID equals dtDes.DesigID
+        //                   select new
+        //                   {
+        //                       d.CandidateName,
+        //                       d.Mobile,
+        //                       d.InterviewDate,
+        //                       d.InterviewerID,
+        //                       dtDes.DesigName,
+        //                       dtt.DeptName,
+        //                       dtt.CompanyInfoTB.CompanyName,
+        //                       d.Status
+        //                   };
+
+
+        //var TodayIntData = (from dt in HR.ScheduleTBs
+        //                     join s in HR.ScheduleDetailsTBs on dt.ScheduleId equals s.ScheduleId
+        //                     join p in HR.SchedulePanelTBs on dt.ScheduleId equals p.ScheduleId
+        //                     join v in HR.VancancyTBs on s.VacancyID equals v.VacancyID
+        //                     join c in HR.CandidateTBs on s.CandidateID equals c.Candidate_ID
+        //                     where dt.Date == DateTime.Now
+        //                     select new
+        //                     {
+        //                         v.Title,
+        //                         s.ScheduleId,
+        //                         c.Name,
+        //                         s.FromTime,
+        //                         s.ToTime,
+        //                         dt.Date,
+        //                         Interviewername = g.Getempname(dt.ScheduleId)
+        //                     }).Distinct();
+
+
+
+        if (TodayIntData.Rows.Count > 0)
+        {
+            grdTodaysInterview.DataSource = TodayIntData;
+            grdTodaysInterview.DataBind();
+            //  lblcnt.Text = deptData.Count().ToString();
+        }
+        else
+        {
+            grdTodaysInterview.DataSource = TodayIntData;
+            grdTodaysInterview.DataBind();
+            // lblcnt.Text = "0";
+        }
+    }
+    protected void grdTodaysInterview_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grdTodaysInterview.PageIndex = e.NewPageIndex;
+        BindTodaysInterview();
+    }
+    protected void txtDate_TextChanged(object sender, EventArgs e)
+    {
+        BindTodaysInterview();
+        BindChartReferenceByEmployee();
+        BindChartCandidateByAgency();
+
+        ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "text", "Javascript:activateTab('tab_4')", true);
+    }
+    protected void Grd_Password_Listtodays_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        Grd_Password_Listtodays.PageIndex = e.NewPageIndex;
+        BindTodaysPassportExpiryList();
+    }
+    protected void grd_VisaExpiryListtodays_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grd_VisaExpiryListtodays.PageIndex = e.NewPageIndex;
+        BindTodaysVisaExpiryList();
+    }
+}
+

@@ -1,0 +1,164 @@
+﻿<%@ Page Title="Department Heads" Language="C#" MasterPageFile="~/UserMaster.master" AutoEventWireup="true" CodeFile="DepartmentHeadMaster.aspx.cs" Inherits="DepartmentHeadMaster" %>
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="Head" Runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+    <asp:UpdatePanel ID="updt" runat="server">
+        <ContentTemplate>
+            <fieldset id="field">
+                <legend></legend>
+                <table width="100%">
+                    <tr>
+                        <td>
+                            <asp:Button ID="btnadd" runat="server" OnClick="btnadd_Click" CssClass="btn bg-blue-active"
+                                Text="AddNew" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <asp:MultiView ID="MultiView1" runat="server" 
+                               >
+                                <asp:View ID="View1" runat="server">
+                                    <table width="99%">
+                                        <tr>
+                                            <td>
+                                                <asp:GridView ID="grd_Deptmaster" runat="server" AutoGenerateColumns="False" BorderStyle="None"
+                                                    BorderWidth="1px" CellPadding="4" ForeColor="Black" GridLines="Vertical" 
+                                                    CssClass="table table-bordered table-striped">
+                                                    <Columns>
+                                                    <asp:TemplateField HeaderText="Sr.No">
+                                                    <ItemTemplate>
+                                                        <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno"/>
+                                                    </ItemTemplate>
+                                                    </asp:TemplateField>
+                                                    <asp:BoundField DataField="HeadId" HeaderText="Head Id" Visible="false"/>
+                                                     <asp:BoundField DataField="FName" HeaderText="Employee Name" />
+                                                     <asp:BoundField DataField="DeptName" HeaderText=" Department Name" />
+<%--                                                     <asp:BoundField DataField="Status" HeaderText="Status" />--%>
+                                                     <asp:TemplateField HeaderText="Action">
+                                                    <ItemTemplate>
+                                                        <asp:LinkButton Text="Edit" runat="server" CommandArgument='<%#Eval("HeadId")%>' ID="lnk"  OnClick="Unnamed1_Click"  />
+                                                    </ItemTemplate>
+                                                    </asp:TemplateField>
+                                                    </Columns>
+                                                    <AlternatingRowStyle BackColor="White" />
+                                                    <FooterStyle />
+                                                    <HeaderStyle />
+                                                   <%-- <PagerStyle HorizontalAlign="Right" />--%>
+                                                     <PagerStyle CssClass="pagination-ys" HorizontalAlign="Center" />
+                                                    <RowStyle />
+                                                    <SelectedRowStyle Font-Bold="True" ForeColor="White" />
+                                                    <SortedAscendingCellStyle />
+                                                    <SortedAscendingHeaderStyle />
+                                                    <SortedDescendingCellStyle />
+                                                    <SortedDescendingHeaderStyle />
+                                                </asp:GridView>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </asp:View>
+                                <asp:View ID="View2" runat="server">
+                                    <asp:Panel ID="pnl" runat="server" DefaultButton="btnsubmit">
+                                        <section class="content-header">
+                                            <h3>Department Head Information </h3>
+
+                                        </section>
+                                        <section class="content">
+
+                                            <!-- left column -->
+                                            <div class="col-md-7">
+
+                                                <div class="box box-primary">
+                                    <table  width="100%">
+                                        <tr>
+                                            <td>
+                                               <%-- <asp:Panel ID="PnlAdd" runat="server" Width="500px">--%>
+                                                    <table width="100%">
+                                                        <tr>
+                                                            <td>
+                                                                Employee Name:<span style="color:red;">*</span>
+                                                            </td>
+                                                            <td>
+                                                                <asp:DropDownList ID="ddlempname" runat="server"  
+                                                                    CausesValidation="True" ValidationGroup="g" CssClass="form-control">
+                                                                </asp:DropDownList>
+                                                                <asp:Label ID="lblheadid" runat="server" Visible="False"></asp:Label>
+                                                                <asp:CompareValidator ID="CompareValidator1" runat="server" 
+                                                                    ControlToValidate="ddlempname" Display="None" 
+                                                                    ErrorMessage="Select Emplyee Name" Operator="NotEqual" ValidationGroup="g" 
+                                                                    ValueToCompare="--Select--"></asp:CompareValidator>
+                                                                <asp:ValidatorCalloutExtender ID="CompareValidator1_ValidatorCalloutExtender" 
+                                                                    runat="server" Enabled="True" TargetControlID="CompareValidator1">
+                                                                </asp:ValidatorCalloutExtender>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                Department Name:<span style="color:red;">*</span></td>
+                                                            <td>
+                                                                <asp:DropDownList ID="ddldeptname" runat="server" 
+                                                                    CausesValidation="True" ValidationGroup="g" CssClass="form-control">
+                                                                </asp:DropDownList>
+                                                                <asp:CompareValidator ID="CompareValidator3" runat="server" 
+                                                                    ControlToValidate="ddldeptname" Display="None" 
+                                                                    ErrorMessage="Select Department Name" Operator="NotEqual" ValidationGroup="g" 
+                                                                    ValueToCompare="--Select--"></asp:CompareValidator>
+                                                                <asp:ValidatorCalloutExtender ID="CompareValidator3_ValidatorCalloutExtender" 
+                                                                    runat="server" Enabled="True" TargetControlID="CompareValidator3">
+                                                                </asp:ValidatorCalloutExtender>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                Status:
+                                                            </td>
+                                                            <td>
+                                                                <asp:RadioButtonList ID="rd_status" runat="server" RepeatDirection="Horizontal">
+                                                                    <asp:ListItem Text="Active" Value="0" Selected="True">
+                                  
+                                                                    </asp:ListItem>
+                                                                    <asp:ListItem Text="InActive" Value="1">
+                                  
+                                                                    </asp:ListItem>
+                                                                </asp:RadioButtonList>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                            </td>
+                                                            <td>
+                                                                <asp:Button ID="btnsubmit" runat="server" Text="Save" OnClick="btnsubmit_Click" ValidationGroup="g"
+                                                                    CssClass="btn bg-blue-active" />
+                                                                &nbsp
+                                                                <asp:Button ID="btncancel" runat="server" Text="Cancel" OnClick="btncancel_Click"
+                                                                    CssClass="btn bg-blue-active" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                              <%--  </asp:Panel>--%>
+                                                <%-- <asp:RoundedCornersExtender ID="rn" runat="server" TargetControlID="PnlAdd" Radius="10"
+                                                Corners="All" BorderColor="#333">
+                                            </asp:RoundedCornersExtender>--%>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                                       </div>
+                                            </div>
+                                        </section>
+                                    </asp:Panel>
+                                </asp:View>
+                            </asp:MultiView>
+                        </td>
+                    </tr>
+                </table>
+            </fieldset>
+         
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
+
+
+
+
+</asp:Content>
+

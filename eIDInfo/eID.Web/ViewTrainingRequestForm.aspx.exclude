@@ -1,0 +1,612 @@
+﻿<%@ Page Title="View Training Request" Language="C#" MasterPageFile="~/UserMaster.master" AutoEventWireup="true" CodeFile="ViewTrainingRequestForm.aspx.cs" Inherits="ViewTrainingRequestForm" %>
+
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
+    <style type="text/css">
+        .fancy-green .ajax__tab_header
+        {
+            background: url(img/blue_bg.gif) repeat-x;
+            cursor: pointer;
+        }
+        .fancy-green .ajax__tab_hover .ajax__tab_outer, .fancy-green .ajax__tab_active .ajax__tab_outer
+        {
+            background: url(img/blue_left.gif) no-repeat left top;
+        }
+        .fancy-green .ajax__tab_hover .ajax__tab_inner, .fancy-green .ajax__tab_active .ajax__tab_inner
+        {
+            background: url(img/blue_right.gif) no-repeat right top;
+        }
+        .fancy .ajax__tab_header
+        {
+            font-size: 13px;
+            font-weight: bold;
+            color: red;
+            font-family: sans-serif;
+        }
+        .fancy .ajax__tab_active .ajax__tab_outer, .fancy .ajax__tab_header .ajax__tab_outer, .fancy .ajax__tab_hover .ajax__tab_outer
+        {
+            height: 46px;
+        }
+        .fancy .ajax__tab_active .ajax__tab_inner, .fancy .ajax__tab_header .ajax__tab_inner, .fancy .ajax__tab_hover .ajax__tab_inner
+        {
+            height: 46px;
+            margin-left: 16px; /* offset the width of the left image */
+        }
+        .fancy .ajax__tab_active .ajax__tab_tab, .fancy .ajax__tab_hover .ajax__tab_tab, .fancy .ajax__tab_header .ajax__tab_tab
+        {
+            margin: 16px 16px 0px 0px;
+        }
+        .fancy .ajax__tab_hover .ajax__tab_tab, .fancy .ajax__tab_active .ajax__tab_tab
+        {
+            color: #fff;
+        }
+        .fancy .ajax__tab_body
+        {
+            font-family: Arial;
+            font-size: 10pt;
+            border-top: 0;
+            border: 1px solid #999999;
+            padding: 8px;
+            background-color: #ffffff;
+        }
+        
+    </style>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <asp:UpdatePanel ID="upogdf" runat="server">
+        <Triggers>
+            <asp:AsyncPostBackTrigger ControlID="ddlampm" />
+            <asp:AsyncPostBackTrigger ControlID="ddltime" />
+        </Triggers>
+        <ContentTemplate>
+
+            <asp:MultiView ID="mul" runat="server" ActiveViewIndex="0">
+                <asp:View ID="view1" runat="server">
+                        <div class="col-md-12">
+                            <div class="box box-primary">
+                                <div class="box-body">
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <b>Sort By :</b>
+                                        </td>
+
+                                        <td> 
+                                            <asp:DropDownList ID="ddlsort" runat="server" Width="175px"  CssClass="form-control"
+                                                OnSelectedIndexChanged="ddlsort_SelectedIndexChanged" AutoPostBack="True">
+                                                <asp:ListItem Selected="True" Value="0">--Select--</asp:ListItem>
+                                                <asp:ListItem>Company Wise </asp:ListItem>
+                                                <asp:ListItem>Department Wise</asp:ListItem>
+                                                <asp:ListItem>Training Topic Wise</asp:ListItem>
+                                            </asp:DropDownList>
+                                        </td>
+                                        <td>
+                                            <asp:HiddenField ID="HiddenFieldEdit" runat="server" />
+                                            <b>
+                                                <asp:Label ID="lblname" Visible="false" runat="server"></asp:Label></b>
+                                        </td>
+                                        <td>
+                                            <asp:DropDownList ID="ddllist" runat="server" Width="175px" Visible="false" CssClass="form-control">
+                                            </asp:DropDownList>
+
+                                            <asp:TextBox ID="txttopicfind" runat="server" Width="165px" Visible="false" CssClass="form-control"></asp:TextBox>
+
+                                            <asp:AutoCompleteExtender ID="AutoCompleteExtender3" runat="server"
+                                                CompletionInterval="1" CompletionSetCount="1" EnableCaching="true"
+                                                Enabled="True" MinimumPrefixLength="1" ServiceMethod="GetNames"
+                                                TargetControlID="txttopicfind" UseContextKey="True">
+                                            </asp:AutoCompleteExtender>
+                                        </td>
+                                        <td>
+                                            <asp:Button ID="btnSearch" Text="Search" runat="server" OnClick="btnSearch_Click"   CssClass="btn bg-blue-active"/>
+                                            <asp:Label ID="lblid" runat="server" Visible="false"></asp:Label>
+                                            <asp:HiddenField ID="HiddenField1" runat="server" />
+                                        </td>
+                                    </tr>
+                                </table>
+                                <table width="100%">
+                                    <tr>
+                                        <td valign="top">
+                                            <asp:TabContainer ID="tab" runat="server" ActiveTabIndex="0"  Width="100%" CssClass="fancy fancy-green">
+
+
+                                                <asp:TabPanel ID="tabrequest" runat="server" HeaderText="View Request" CssClass="box-body">
+
+
+                                                    <ContentTemplate>
+
+
+                                                        <asp:GridView ID="grdviewrequst" runat="server" AllowPaging="True"
+                                                            AutoGenerateColumns="False" BorderStyle="None" BorderWidth="1px" Width="99%"
+                                                            CellPadding="4" CssClass="table table-bordered table-striped" ForeColor="Black" GridLines="Vertical"
+                                                            OnPageIndexChanging="grdviewrequst_PageIndexChanging">
+
+
+                                                            <Columns>
+
+
+                                                                <asp:TemplateField HeaderText="Sr.No">
+
+
+                                                                    <ItemTemplate>
+
+
+                                                                        <asp:Label ID="srno" runat="server" Text="<%#Container.DataItemIndex + 1 %>" />
+
+
+                                                                    </ItemTemplate>
+
+
+                                                                    <ItemStyle HorizontalAlign="Center" />
+
+
+                                                                </asp:TemplateField>
+
+
+                                                                <asp:BoundField DataField="CompanyName" HeaderText="Company Name" />
+
+
+                                                                <asp:BoundField DataField="DepartmentName" HeaderText="Department Name" />
+
+
+                                                                <asp:BoundField DataField="EmpName" HeaderText="Employee Name" />
+
+
+                                                                <asp:BoundField DataField="Request_Date" HeaderText="Training Request Date" DataFormatString="{0:MM/dd/yyyy}" />
+
+
+
+
+
+                                                                <asp:TemplateField HeaderText="Training Topic">
+
+
+                                                                    <ItemTemplate>
+
+
+                                                                        <asp:TextBox ID="Address" runat="server" Enabled="false"
+                                                                            Text='<%# Eval("Training_Topic") %>' TextMode="MultiLine" Width="130px" />
+
+
+                                                                        <itemstyle horizontalalign="Center" />
+
+
+                                                                    </ItemTemplate>
+
+
+                                                                    <ItemStyle HorizontalAlign="Center" />
+
+
+                                                                </asp:TemplateField>
+
+
+
+
+
+                                                                <asp:TemplateField HeaderText="Action">
+
+
+                                                                    <ItemTemplate>
+
+
+                                                                        <asp:LinkButton ID="lnkselect" runat="server"
+                                                                            CommandArgument='<%# Eval("TrainingRequest_ID") %>'
+                                                                            Text="Shedule" OnClick="lnkselect_Click"></asp:LinkButton>
+
+
+
+
+                                                                        <asp:LinkButton ID="LinkCancel" runat="server"
+                                                                            CommandArgument='<%# Eval("TrainingRequest_ID") %>'
+                                                                            Text="Cancel" OnClick="LinkCancel_Click"></asp:LinkButton>
+
+
+                                                                        <asp:ConfirmButtonExtender ID="confcancel" runat="server" Enabled="True" TargetControlID="LinkCancel" ConfirmText="Do You Want To Realy Cancel This Trainig ?">
+                                                                        </asp:ConfirmButtonExtender>
+
+
+                                                                    </ItemTemplate>
+
+
+                                                                </asp:TemplateField>
+
+
+                                                            </Columns>
+
+
+                                                        </asp:GridView>
+
+
+                                                    </ContentTemplate>
+
+
+                                                </asp:TabPanel>
+
+
+
+
+
+                                                <asp:TabPanel ID="tabaccepted" runat="server" HeaderText="Accepted Request">
+
+
+                                                    <ContentTemplate>
+
+
+                                                        <asp:GridView ID="Gridaccept" runat="server" AllowPaging="True"
+                                                            AutoGenerateColumns="False" BorderStyle="None" BorderWidth="1px" Width="99%"
+                                                            CellPadding="4" CssClass="table table-bordered table-striped" ForeColor="Black" GridLines="Vertical"
+                                                            OnPageIndexChanging="Gridaccept_PageIndexChanging">
+
+
+                                                            <Columns>
+
+
+                                                                <asp:TemplateField HeaderText="Sr.No">
+
+
+                                                                    <ItemTemplate>
+
+
+                                                                        <asp:Label ID="srno" runat="server" Text="<%#Container.DataItemIndex + 1 %>" />
+
+
+                                                                    </ItemTemplate>
+
+
+                                                                    <ItemStyle HorizontalAlign="Center" />
+
+
+                                                                </asp:TemplateField>
+
+
+                                                                <asp:BoundField DataField="CompanyName" HeaderText="Company Name" />
+
+
+                                                                <asp:BoundField DataField="DepartmentName" HeaderText="Department Name" />
+
+
+                                                                <asp:BoundField DataField="EmpName" HeaderText="Employee Name" />
+
+
+                                                                <asp:BoundField DataField="Request_Date" HeaderText="Training Request Date" DataFormatString="{0:MM/dd/yyyy}" />
+
+
+
+
+
+                                                                <asp:TemplateField HeaderText="Training Topic">
+
+
+                                                                    <ItemTemplate>
+
+
+                                                                        <asp:TextBox ID="Address" runat="server" Enabled="false"
+                                                                            Text='<%# Eval("Training_Topic") %>' TextMode="MultiLine" Width="130px" />
+
+
+                                                                        <itemstyle horizontalalign="Center" />
+
+
+                                                                    </ItemTemplate>
+
+
+                                                                    <ItemStyle HorizontalAlign="Center" />
+
+
+                                                                </asp:TemplateField>
+
+
+                                                                <asp:BoundField DataField="Training_Date" HeaderText="Training Date" DataFormatString="{0:MM/dd/yyyy}" />
+
+
+                                                                <asp:BoundField DataField="Time" HeaderText="Training Time" />
+
+
+                                                                <asp:BoundField DataField="Trainer_Name" HeaderText="Trainer Name " />
+
+
+                                                                <asp:BoundField DataField="Training_Location" HeaderText="Location " />
+
+
+
+
+
+
+
+
+                                                            </Columns>
+
+
+                                                        </asp:GridView>
+
+
+
+
+
+                                                    </ContentTemplate>
+
+
+
+
+
+                                                </asp:TabPanel>
+
+
+                                                <asp:TabPanel ID="tabcancel" runat="server" HeaderText="Canceled Request">
+
+                                                   
+                                                    <ContentTemplate>
+
+
+                                                        <asp:GridView ID="grdcancel" runat="server" AllowPaging="True" PageSize="10"
+                                                            AutoGenerateColumns="False" BorderStyle="None" BorderWidth="1px"
+                                                            CellPadding="4" CssClass="table table-bordered table-striped" ForeColor="Black" GridLines="Vertical"
+                                                            OnPageIndexChanging="grdcancel_PageIndexChanging">
+
+
+                                                            <Columns>
+
+
+                                                                <asp:TemplateField HeaderText="Sr.No">
+
+
+                                                                    <ItemTemplate>
+
+
+                                                                        <asp:Label ID="srno" runat="server" Text="<%#Container.DataItemIndex + 1 %>" />
+
+
+                                                                    </ItemTemplate>
+
+
+                                                                    <ItemStyle HorizontalAlign="Center" />
+
+
+                                                                </asp:TemplateField>
+
+
+                                                                <asp:BoundField DataField="CompanyName" HeaderText="Company Name" />
+
+
+                                                                <asp:BoundField DataField="DepartmentName" HeaderText="Department Name" />
+
+
+                                                                <asp:BoundField DataField="EmpName" HeaderText="Employee Name" />
+
+
+                                                                <asp:BoundField DataField="Request_Date" HeaderText="Training Request Date" DataFormatString="{0:MM/dd/yyyy}" />
+
+
+
+
+
+                                                                <asp:TemplateField HeaderText="Training Topic">
+
+
+                                                                    <ItemTemplate>
+
+
+                                                                        <asp:TextBox ID="Address" runat="server" Enabled="false"
+                                                                            Text='<%# Eval("Training_Topic") %>' TextMode="MultiLine" Width="130px" />
+
+
+                                                                        <itemstyle horizontalalign="Center" />
+
+
+                                                                    </ItemTemplate>
+
+
+                                                                    <ItemStyle HorizontalAlign="Center" />
+
+
+                                                                </asp:TemplateField>
+
+
+                                                            </Columns>
+                                                            <PagerStyle HorizontalAlign="Right" />
+
+                                                        </asp:GridView>
+
+
+
+
+
+                                                    </ContentTemplate>
+
+
+                                                </asp:TabPanel>
+
+
+
+
+
+
+
+
+                                            </asp:TabContainer>
+                                        </td>
+                                    </tr>
+
+                                </table>
+                            </div>
+                                </div>
+                        </div>
+                </asp:View>
+                <fieldset id="Fieldset1">
+                    <legend style="font-size: medium">Training Shedule</legend>
+                    <asp:View ID="view2" runat="server">
+                        <table width="70%">
+
+                            <tr>
+                                <td>
+                                    <b>Company Name :</b>
+                                </td>
+                                <td style="padding-left: 10px" colspan="2">
+
+                                    <asp:Label ID="lblcompany" runat="server"></asp:Label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Department Name :</b>
+                                </td>
+
+                                <td style="padding-left: 10px" colspan="2">
+
+                                    <asp:Label ID="lbldept" runat="server"></asp:Label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Topic Name :</b>
+                                </td>
+                                <td colspan="2">
+
+                                    <asp:TextBox ID="txttopic" runat="server" TextMode="MultiLine" Width="165px"
+                                        ReadOnly="True" Style="margin-left: 12px"></asp:TextBox>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Training Request Date :</b>
+                                </td>
+                                <td style="padding-left: 10px" colspan="2">
+
+                                    <asp:Label ID="lblreqDate" runat="server"></asp:Label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Training Date :</b>
+                                </td>
+                                <td>
+                                    <asp:TextBox ID="txtDate" runat="server" Width="165px" 
+                                        OnTextChanged="txtDate_TextChanged" AutoPostBack="True"></asp:TextBox>
+
+                                    <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ControlToValidate="txtDate"
+                                        Display="None" ErrorMessage="Enter Training Date" SetFocusOnError="True"
+                                        ValidationGroup="S"></asp:RequiredFieldValidator>
+
+
+                                    <asp:ValidatorCalloutExtender ID="RequiredFieldValidator1_ValidatorCalloutExtender"
+                                        runat="server" Enabled="True" TargetControlID="RequiredFieldValidator1">
+                                    </asp:ValidatorCalloutExtender>
+
+
+                                    <asp:CalendarExtender ID="txtDate_CalendarExtender" runat="server"
+                                        Format="MM/dd/yyyy" Enabled="True" TargetControlID="txtDate">
+                                    </asp:CalendarExtender>
+                                    <asp:TextBoxWatermarkExtender ID="txtfdate_TextBoxWatermarkExtender"
+                                        runat="server" TargetControlID="txtDate"
+                                        WatermarkText="MM/dd/yyyy">
+                                    </asp:TextBoxWatermarkExtender>
+
+                                </td>
+                                <td>
+                                    <asp:Label ID="lblmessage" runat="server" Font-Italic="True" ForeColor="Red"
+                                        Visible="False"></asp:Label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Trainer Name :</b>
+                                </td>
+                                <td colspan="2">
+                                    <asp:TextBox ID="txttrainer" runat="server" Width="165px"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ControlToValidate="txttrainer"
+                                        Display="None" ErrorMessage="Enter Trainer Name" SetFocusOnError="True"
+                                        ValidationGroup="S"></asp:RequiredFieldValidator>
+
+
+                                    <asp:ValidatorCalloutExtender ID="ValidatorCalloutExtender1"
+                                        runat="server" Enabled="True" TargetControlID="RequiredFieldValidator2">
+                                    </asp:ValidatorCalloutExtender>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Time : </b>
+                                </td>
+                                <td colspan="2">
+                                    <asp:DropDownList ID="ddltime" runat="server" Width="80px" CausesValidation="true"
+                                        Style="margin-left: 12px">
+                                        <asp:ListItem Selected="True" Value="0">--Select--</asp:ListItem>
+                                        <asp:ListItem Value="1">1</asp:ListItem>
+                                        <asp:ListItem Value="2">2</asp:ListItem>
+                                        <asp:ListItem Value="3">3</asp:ListItem>
+                                        <asp:ListItem Value="4">4</asp:ListItem>
+                                        <asp:ListItem Value="5">5</asp:ListItem>
+                                        <asp:ListItem Value="6">6</asp:ListItem>
+                                        <asp:ListItem Value="7">7</asp:ListItem>
+                                        <asp:ListItem Value="8">8</asp:ListItem>
+                                        <asp:ListItem Value="9">9</asp:ListItem>
+                                        <asp:ListItem Value="10">10</asp:ListItem>
+                                        <asp:ListItem Value="11">11</asp:ListItem>
+                                        <asp:ListItem Value="12">12</asp:ListItem>
+                                    </asp:DropDownList>
+
+                                    <asp:CompareValidator ID="CompareValidator1" runat="server" ControlToValidate="ddltime"
+                                        Display="None" ErrorMessage="Select Time" Operator="NotEqual"
+                                        ValidationGroup="S" ValueToCompare="0" SetFocusOnError="True"></asp:CompareValidator>
+                                    <asp:ValidatorCalloutExtender ID="CompareValidator1_ValidatorCalloutExtender"
+                                        runat="server" Enabled="True" TargetControlID="CompareValidator1">
+                                    </asp:ValidatorCalloutExtender>
+
+                                    <asp:DropDownList ID="ddlampm" runat="server" Width="80px" CausesValidation="true">
+                                        <asp:ListItem Selected="True" Value="0">--Select--</asp:ListItem>
+                                        <asp:ListItem Value="1">AM</asp:ListItem>
+                                        <asp:ListItem Value="2">PM</asp:ListItem>
+                                    </asp:DropDownList>
+                                    <asp:CompareValidator ID="CompareValidator3" runat="server" ControlToValidate="ddlampm"
+                                        Display="None" ErrorMessage="Select Time Unit" ValidationGroup="S" ValueToCompare="0"
+                                        Operator="NotEqual"></asp:CompareValidator>
+                                    <asp:ValidatorCalloutExtender ID="ValidatorCalloutExtender4" runat="server" Enabled="True"
+                                        TargetControlID="CompareValidator3">
+                                    </asp:ValidatorCalloutExtender>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Training Location : </b>
+                                </td>
+                                <td colspan="2">
+                                    <asp:TextBox ID="txtlocation" runat="server" TextMode="MultiLine" Width="165px"
+                                        Style="margin-left: 12px"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ControlToValidate="txtlocation"
+                                        Display="None" ErrorMessage="Enter Training Location" SetFocusOnError="True"
+                                        ValidationGroup="S"></asp:RequiredFieldValidator>
+
+
+                                    <asp:ValidatorCalloutExtender ID="ValidatorCalloutExtender3"
+                                        runat="server" Enabled="True" TargetControlID="RequiredFieldValidator3">
+                                    </asp:ValidatorCalloutExtender>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Remark :</b>
+                                </td>
+                                <td colspan="2">
+                                    <asp:TextBox ID="txtremark" runat="server" TextMode="MultiLine" Width="165px"
+                                        Style="margin-left: 12px"></asp:TextBox>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="margin-right: 20px">
+                                    <asp:Button ID="btnShedule" runat="server" Text="Shedule" ValidationGroup="S"
+                                        CssClass="add" OnClick="btnShedule_Click" />
+
+                                    <asp:Button ID="btncancel" runat="server" Text="Cancel" OnClick="btncancel_Click" CssClass="cancel" />
+                                </td>
+                            </tr>
+                        </table>
+
+                    </asp:View>
+                </fieldset>
+            </asp:MultiView>
+
+
+        </ContentTemplate>
+    </asp:UpdatePanel>
+</asp:Content>
+

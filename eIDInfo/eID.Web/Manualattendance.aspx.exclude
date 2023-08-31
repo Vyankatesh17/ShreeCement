@@ -1,0 +1,214 @@
+﻿<%@ Page Title="Manual Attendance" Language="C#" MasterPageFile="~/UserMaster.master" AutoEventWireup="true" CodeFile="Manualattendance.aspx.cs" Inherits="Manualattendance" %>
+
+
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="Head" runat="Server">
+    <script>
+        function Confirm() {
+            var confirm_value = document.createElement("INPUT");
+            confirm_value.type = "hidden";
+            confirm_value.name = "confirm_value";
+            if (confirm("Do you want to Update? ")) {
+
+                confirm_value.value = "Yes";
+
+
+            } else {
+
+                confirm_value.value = "No";
+            }
+            document.forms[0].appendChild(confirm_value);
+            form1.submit();
+        }
+
+        function call() {
+            alert("Call Client");
+            return true;
+        }
+    </script>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+  
+    <asp:UpdatePanel ID="updt" runat="server">
+        <ContentTemplate>
+            <asp:MultiView ID="MultiView1" runat="server">
+                <asp:View ID="View1" runat="server">
+                    <div class="col-md-12">
+                        <div style="position: relative; left: 0px; top: 0px;" class="box box-info">
+                            <div style="cursor: move; border-bottom: 2px solid #C1C1C1" class="box-header">
+                                <i class="fa fa-list"></i>
+                                <h3 class="box-title">Today's Manual Attendance List</h3>
+                                <!-- tools box -->
+                                <div class="pull-right box-tools">
+                                    <asp:Button ID="btnadd" runat="server" OnClick="btnadd_Click" CssClass="btn bg-blue-active"
+                                        Text="Add New" />
+                                </div>
+                                <!-- /. tools -->
+                            </div>
+                            <div class="box-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="pull-right">
+                                            <asp:Label ID="lbl1" runat="server" Text="No. of Records :">
+                                            </asp:Label>&nbsp;&nbsp;
+                                            <asp:Label ID="lblcnt" runat="server">
+                                            </asp:Label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <asp:GridView ID="grdAtt" runat="server" AutoGenerateColumns="False"
+                                            CssClass="table table-bordered table-striped" AllowPaging="true" PageSize="10" OnPageIndexChanging="grdAtt_PageIndexChanging">
+                                            <PagerStyle CssClass="pagination-ys" HorizontalAlign="Center" />
+                                            <Columns>
+                                                <asp:TemplateField HeaderText="Sr. No.">
+                                                    <ItemTemplate>
+                                                        <%#Container.DataItemIndex+1 %>
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                                <asp:BoundField DataField="CompanyName" HeaderText="Company Name" />
+                                                <asp:BoundField DataField="Name" HeaderText="Employee Name" />
+                                                <asp:BoundField DataField="AttendanceDate" HeaderText="Attendance Date" DataFormatString="{0:MM/dd/yyyy}" />
+                                                <asp:BoundField DataField="Status" HeaderText="Attendance Status" />
+                                                <asp:TemplateField HeaderText="Remarks">
+                                                    <ItemTemplate>
+                                                        <asp:TextBox runat="server" ID="txtre" Text='<%#Eval("Remarks") %>' ReadOnly="true" TextMode="MultiLine" />
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                            </Columns>
+                                            <EmptyDataTemplate>
+                                                No Data Exists!!!!
+                                            </EmptyDataTemplate>
+                                        </asp:GridView>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </asp:View>
+                <asp:View ID="View2" runat="server">
+                    <div class="col-md-12">
+                        <div style="position: relative; left: 0px; top: 0px;" class="box box-primary">
+                            <div style="cursor: move; border-bottom: 2px solid #C1C1C1" class="box-header">
+                                <i class="fa fa-filter"></i>
+                                <h3 class="box-title">Manual Attendance Info</h3>
+                                <!-- tools box -->
+                                <div class="pull-right box-tools">
+                                    <asp:Button ID="Button1" runat="server" Text="Back" OnClick="btncancel_Click" CausesValidation="false"
+                                                                    CssClass="btn btn-xs btn-primary" />
+                                </div>
+                                <!-- /. tools -->
+                            </div>
+                            <div class="box-body">
+                                <asp:Panel ID="PnlAdd" runat="server" DefaultButton="btnsubmit">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label>Select Company <span class="text-red">*</span></label>
+                                            <asp:DropDownList ID="ddlComp" runat="server" AutoPostBack="True" CssClass="form-control" OnSelectedIndexChanged="ddlComp_SelectedIndexChanged">
+                                            </asp:DropDownList>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server"
+                                                ControlToValidate="ddlComp" Display="Dynamic"
+                                                ErrorMessage="Required Company Name" SetFocusOnError="True"
+                                                ValidationGroup="S" ForeColor="Red" InitialValue="--Select--"></asp:RequiredFieldValidator>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Select Employee <span class="text-red">*</span></label>
+                                            <asp:DropDownList ID="ddlEmp" runat="server" AutoPostBack="True" CssClass="form-control">
+                                            </asp:DropDownList>
+                                            &nbsp;<asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ControlToValidate="ddlEmp" Display="Dynamic" ErrorMessage="Required Employee Name" SetFocusOnError="True" ValidationGroup="S" ForeColor="Red" InitialValue="--Select--"></asp:RequiredFieldValidator>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Status <span class="text-red">*</span></label>
+                                            <asp:DropDownList ID="ddlStatus" runat="server" AutoPostBack="True" CssClass="form-control" OnSelectedIndexChanged="ddlStatus_SelectedIndexChanged">
+                                                <asp:ListItem Selected="True">Present</asp:ListItem>
+                                                <asp:ListItem>Absent</asp:ListItem>
+                                                <asp:ListItem>Half Day</asp:ListItem>
+                                            </asp:DropDownList>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label>Attendance Date <span class="text-red">*</span></label>
+                                            <asp:TextBox ID="txtDate" OnTextChanged="txtDate_TextChanged" AutoPostBack="true" runat="server" CssClass="form-control"></asp:TextBox>
+                                            <asp:CalendarExtender ID="txtDate_CalendarExtender" runat="server" Enabled="True" TargetControlID="txtDate" Format="MM/dd/yyyy">
+                                            </asp:CalendarExtender>
+                                            <br />
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator4" runat="server"
+                                                ControlToValidate="txtDate" Display="Dynamic" ErrorMessage="Required Attendance Date"
+                                                SetFocusOnError="True" ValidationGroup="S" ForeColor="Red"></asp:RequiredFieldValidator>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div id="trintime" runat="server">
+                                                <label>
+                                                    In Time
+                                                </label>
+                                                <asp:TextBox ID="txtintimehours" runat="server" CssClass="form-control"></asp:TextBox>
+                                                <asp:MaskedEditExtender ID="MaskedEditExtender1" TargetControlID="txtintimehours"
+                                                    Mask="99:99 " MaskType="Time" CultureName="en-us" MessageValidatorTip="true"
+                                                    ErrorTooltipEnabled="True" AcceptAMPM="true" runat="server">
+                                                </asp:MaskedEditExtender>
+                                                <asp:UpdatePanel ID="UpdatePanel1" UpdateMode="Always" runat="server">
+                                                    <ContentTemplate>
+                                                        <asp:MaskedEditValidator ID="editValidator1" ControlExtender="MaskedEditExtender1"
+                                                            acceptampm="true" ControlToValidate="txtintimehours" IsValidEmpty="False" MaximumValue="12"
+                                                            MinimumValue="01" EmptyValueMessage="In Time is required" EmptyValueBlurredText="In Time is required"
+                                                            InvalidValueBlurredMessage="In Time is invalid" InvalidValueMessage="In Time is invalid"
+                                                            TooltipMessage="" runat="server" />
+                                                    </ContentTemplate>
+                                                </asp:UpdatePanel>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div id="trouttime" runat="server">
+                                                <label>Out Time</label>
+                                                <asp:TextBox ID="txtouttime" runat="server" CssClass="form-control"></asp:TextBox>
+                                                <asp:MaskedEditExtender ID="MaskedEditExtender2" TargetControlID="txtouttime" Mask="99:99"
+                                                    MaskType="Time" CultureName="en-us" MessageValidatorTip="true" ErrorTooltipEnabled="True"
+                                                    AcceptAMPM="true" runat="server">
+                                                </asp:MaskedEditExtender>
+                                                <asp:UpdatePanel ID="UpdatePanel2" UpdateMode="Always" runat="server">
+                                                    <ContentTemplate>
+                                                        <asp:MaskedEditValidator ID="MaskedEditValidator123" ControlExtender="MaskedEditExtender2"
+                                                            acceptampm="true" ControlToValidate="txtouttime" IsValidEmpty="False" MaximumValue="12"
+                                                            MinimumValue="01" EmptyValueMessage="Out Time is required" EmptyValueBlurredText="Out Time is required"
+                                                            InvalidValueBlurredMessage="Out Time is invalid" InvalidValueMessage="Out Time is invalid"
+                                                            TooltipMessage="" runat="server" />
+                                                    </ContentTemplate>
+                                                </asp:UpdatePanel>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label>Remarks</label>
+                                            <asp:TextBox runat="server" ID="txtRemrks" TextMode="MultiLine" CssClass="form-control" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <br />
+                                            <asp:Button ID="btnsubmit" runat="server" Text="Save" OnClick="btnsubmit_Click" ValidationGroup="S"
+                                                CssClass="btn bg-blue-active" />
+                                            &nbsp
+                                                                <asp:Button ID="btncancel" runat="server" Text="Cancel" OnClick="btncancel_Click" CausesValidation="false"
+                                                                    CssClass="btn bg-blue-active" />
+                                        </div>
+                                    </div>
+                                </asp:Panel>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    </div>
+                </asp:View>
+            </asp:MultiView>
+            </td>
+                </tr>
+            </table>
+
+
+        
+
+        </ContentTemplate>
+    </asp:UpdatePanel>
+</asp:Content>
+

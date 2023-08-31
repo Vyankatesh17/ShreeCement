@@ -1,0 +1,14 @@
+﻿.main-header .logo {
+    padding: 5px 25px !important;
+}
+
+.navbar-custom {
+    background: #75797b !important;
+}
+.logo-lg-custom img{
+    max-width:90% !important;
+    height:44px !important;
+}
+.sidebar-top-custom {
+   
+}

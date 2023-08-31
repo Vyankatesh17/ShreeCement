@@ -1,0 +1,303 @@
+﻿<%@ Page Title="Job Description" Language="C#" MasterPageFile="~/UserMaster.master" AutoEventWireup="true" CodeFile="JD_Details.aspx.cs" Inherits="JD_Details" %>
+
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
+<%@ Register Src="~/Controls/wucPopupMessageBox.ascx" TagName="Time" TagPrefix="uc1" %>
+<%@ Register TagPrefix="FCKeditorV2" Namespace="FredCK.FCKeditorV2" Assembly="FredCK.FCKeditorV2" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="Server">
+    <script type="text/javascript" language="javascript">
+
+        function AddNewRow() {
+
+            var rownum = 1;
+
+            var div = document.createElement("div")
+
+            var divid = "dv" + rownum
+
+            div.setAttribute("ID", divid)
+
+            rownum++
+
+            var lbl = document.createElement("label")
+
+            lbl.setAttribute("ID", "lbl" + rownum)
+
+            lbl.setAttribute("class", "label1")
+
+            lbl.innerHTML = ""
+
+            rownum++
+
+            var _upload = document.createElement("input")
+
+            _upload.setAttribute("type", "file")
+
+            _upload.setAttribute("ID", "upload" + rownum)
+
+            _upload.setAttribute("runat", "server")
+
+            _upload.setAttribute("name", "uploads" + rownum)
+
+            rownum++
+
+            var hyp = document.createElement("a")
+
+            hyp.setAttribute("style", "cursor:Pointer")
+
+            hyp.setAttribute("onclick", "return RemoveDv('" + divid + "');");
+
+            hyp.innerHTML = "Remove"
+
+            rownum++
+
+            var br = document.createElement("br")
+
+            var _pdiv = document.getElementById("Parent")
+
+            div.appendChild(br)
+
+            div.appendChild(lbl)
+
+            div.appendChild(_upload)
+
+            div.appendChild(hyp)
+
+            _pdiv.appendChild(div)
+
+        }
+
+        function RemoveDv(obj) {
+
+            var p = document.getElementById("Parent")
+
+            var chld = document.getElementById(obj)
+
+            p.removeChild(chld)
+
+        }
+
+    </script>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <asp:MultiView ID="MultiView1" runat="server" ActiveViewIndex="0">
+        <asp:View ID="View1" runat="server">
+
+          
+            <div class="col-md-12">
+                <div class="box box-primary">
+                    <div class="box-body">
+                        <div class="form-group">
+                            <%--   <fieldset>
+                                <legend></legend>--%>
+
+
+
+
+                            <table width="100%">
+                                <tr>
+                                    <td>
+                                        <asp:Button ID="btnadd" runat="server" OnClick="btnadd_Click" CssClass="btn bg-blue-active"
+                                            Text="Add New" CausesValidation="False" Width="120px" Visible="False" />
+                                    </td>
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td>
+                                        <%--<asp:AutoCompleteExtender ID="AutoCompleteExtender3" runat="server" 
+                                      CompletionInterval="1" CompletionSetCount="1" EnableCaching="true" 
+                                      Enabled="True" MinimumPrefixLength="1" ServiceMethod="GetClientNames" 
+                                      TargetControlID="txtclientnamefind" UseContextKey="True">
+                                  </asp:AutoCompleteExtender>--%>
+                                        <%--
+                                            <asp:AutoCompleteExtender ID="AutoCompleteExtender1" runat="server" 
+                                      CompletionInterval="1" CompletionSetCount="1" EnableCaching="true" 
+                                      Enabled="True" MinimumPrefixLength="1" ServiceMethod="GetdocuNames" 
+                                      TargetControlID="txtdocumentfind" UseContextKey="True">--%>
+                                        <%--  </asp:AutoCompleteExtender>--%>
+                                    </td>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5">
+                                        <asp:GridView ID="grd_JD" runat="server" AutoGenerateColumns="False"
+                                            AllowPaging="true" Width="100%"
+                                            PageSize="10" CssClass="table table-bordered table-striped"
+                                            AllowSorting="True" OnPageIndexChanging="grd_JD_PageIndexChanging">
+                                            <Columns>
+                                                <asp:TemplateField HeaderText="Sr.No">
+                                                    <ItemTemplate>
+                                                        <asp:Label Text='<%#Container.DataItemIndex + 1 %>' runat="server" ID="srno" />
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+
+
+                                                <asp:BoundField DataField="Name" HeaderText="Employee Name" />
+
+                                                <asp:BoundField DataField="JobDesc" HeaderText="JobDesc" HtmlEncode="false" />
+
+
+
+                                                <asp:BoundField DataField="Status" HeaderText="Status" />
+
+                                                <asp:TemplateField HeaderText="Action">
+                                                    <ItemTemplate>
+                                                        <asp:LinkButton Text="Edit" runat="server" CommandArgument='<%#Eval("JDId")%>'
+                                                            ID="lnk" OnClick="Edit_Click" />
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                            </Columns>
+
+                                            <FooterStyle />
+                                            <HeaderStyle />
+                                            <PagerStyle HorizontalAlign="left" />
+                                            <RowStyle />
+                                            <SelectedRowStyle Font-Bold="True" ForeColor="White" />
+                                            <SortedAscendingCellStyle />
+                                            <SortedAscendingHeaderStyle />
+                                            <SortedDescendingCellStyle />
+                                            <SortedDescendingHeaderStyle />
+                                            <RowStyle CssClass="odd" />
+                                            <AlternatingRowStyle CssClass="even" />
+                                        </asp:GridView>
+                                        &nbsp;</td>
+                                </tr>
+                            </table>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </asp:View>
+
+        <asp:View ID="View2" runat="server">
+
+           
+            <div class="col-md-10">
+                <div class="box box-primary">
+                    <div class="box-body">
+                        <div class="form-group">
+                            <%--  <fieldset>
+                                <legend>Job Description Details</legend>--%>
+
+
+                            <table cellpadding="2" cellspacing="2" width="100%">
+                                <tr>
+                                    <td>
+                                        <%-- <asp:Panel ID="PnlAdd" runat="server" Width="500px">--%>
+                                        <table cellpadding="2" cellspacing="2" width="100%">
+                                            <tr>
+                                                <td class="style1">Employee Name :
+                                                </td>
+                                                <td style="margin-left: 9px;">
+                                                    <asp:DropDownList ID="ddlemplyeename" runat="server" CausesValidation="True"
+                                                        CssClass="form-control" Width="590px">
+                                                    </asp:DropDownList>
+                                                    <asp:Label runat="server" ID="lblJDid" Visible="False" />
+                                                    <asp:Label runat="server" ID="lblDocumentPath" Visible="False" />
+                                                    <asp:CompareValidator ID="CompareValidator1" runat="server"
+                                                        ControlToValidate="ddlemplyeename" Display="None"
+                                                        ErrorMessage="Select Employee Name" Operator="NotEqual" ValidationGroup="k"
+                                                        ValueToCompare="--Select--"></asp:CompareValidator>
+                                                    <asp:ValidatorCalloutExtender ID="CompareValidator1_ValidatorCalloutExtender"
+                                                        runat="server" Enabled="True" TargetControlID="CompareValidator1">
+                                                    </asp:ValidatorCalloutExtender>
+                                                </td>
+                                            </tr>
+
+
+                                            <%--   Select File 1:<br />
+                                       <input type="file" id="myfile" multiple="multiple" name="myfile" runat="server" size="100" />
+                                            <br />
+                                          
+                                     
+                                              Select File 2:<br />
+            <input id="File2" type="file" runat="Server" size="100" />
+            <br />
+            Select File 3:<br />
+            <input id="File3" type="file" runat="Server" size="100" />
+            <br />
+            Select File 4:<br />
+            <input id="File4" type="file" runat="Server" size="100" />
+               <br /
+               <span id="Span1" runat="Server"></span>
+              <br />
+                <br />
+              <asp:Button ID="Button1" runat="server"  Text="Upload Document" CssClass="buttom" OnClick="btnupload_Click" />--%>
+
+
+
+
+
+
+                                            <%-- <asp:FileUpload ID="fileup" 
+                                        runat="server" accept="Photo/*" EnableTheming="True" 
+                                        onchange=" this.form.submit();" Style="margin-left: 17px" Width="75%" />--%>
+
+
+
+
+
+
+
+
+
+
+
+                                            <caption>
+                                                <br />
+                                                <tr>
+                                                    <td>Job Description :
+                                                    </td>
+                                                    <td style="border: 1px bold black;">
+                                                        <FCKeditorV2:FCKeditor ID="FCKeditor1" runat="server" BasePath="~/fckeditor/"
+                                                            Height="300px" SkinPath="skins/office2003/" Width="80%">
+                                                        </FCKeditorV2:FCKeditor>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="style1">Status:
+                                                    </td>
+                                                    <td>
+                                                        <asp:RadioButtonList ID="rd_status" runat="server" RepeatDirection="Horizontal">
+                                                            <asp:ListItem Selected="True" Text="Active" Value="0">
+                                  
+                                                            </asp:ListItem>
+                                                            <asp:ListItem Text="InActive" Value="1">
+                                  
+                                                            </asp:ListItem>
+                                                        </asp:RadioButtonList>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="style1"></td>
+                                                    <td class="style1">
+                                                        <asp:Button ID="btnsubmit" runat="server" CssClass="btn bg-blue-active"
+                                                            OnClick="btnsubmit_Click" Text="Save" ValidationGroup="k" />
+                                                        &nbsp;
+                                                                <asp:Button ID="btncancel" runat="server" CssClass="btn bg-blue-active"
+                                                                    OnClick="btncancel_Click" Text="Cancel" />
+                                                    </td>
+                                                </tr>
+                                            </caption>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            <table id="Table1" cellpadding="0" cellspacing="0" width="100%" border="0" runat="server">
+                            </table>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </asp:View>
+
+    </asp:MultiView>
+    <uc1:Time ID="modpop" runat="server" />
+</asp:Content>
+

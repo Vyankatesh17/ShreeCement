@@ -1,0 +1,3275 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data;
+using System.IO;
+using System.Text;
+
+public partial class EmployeeDetails : System.Web.UI.Page
+{
+    HrPortalDtaClassDataContext db = new HrPortalDtaClassDataContext();
+    DataTable Dt = new DataTable();
+    Genreal g = new Genreal();
+    DataTable dtt = new DataTable();
+    static DataTable dt1, dtProfess, dtFamily, dtHealth, dtFinancial, dtSpiritual, dtLeisure;
+
+    static DataTable dt2, dt3, dt4, dt5;
+    DataTable dtstr = new DataTable();
+    DataTable dtweek = new DataTable();
+    DataTable dtOper = new DataTable();
+    DataTable dtTherat = new DataTable();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (Session["UserId"] != null)
+        {
+
+            if (!IsPostBack)
+            {
+                BindNews();
+                BindAllSwot();
+                BindAllSelfDevNew();
+                BindSelfDev();
+                MultiView1.ActiveViewIndex = 0;
+                BindAllEmp();
+                BindAllSelfDev();
+                BindViewData();
+            }
+            dtt.Columns.Add(new DataColumn("SelfDevId", typeof(string)));
+            dtt.Columns.Add(new DataColumn("SelfdevepType", typeof(string)));
+            dtt.Columns.Add(new DataColumn("ProfessinalDescr", typeof(string)));
+            dtt.Columns.Add(new DataColumn("ProfessTimeFrame", typeof(string)));
+            dtt.Columns.Add(new DataColumn("ProfessValues", typeof(string)));
+            Label6.Text = txtfname.Text + ' ' + txtmname.Text + ' ' + txtlname.Text;
+
+            var data = from news in db.MasterNewsTBs
+                       where news.Status == 0
+                       select new
+                       {
+                           news.Newsid,
+                           news.NewsTitle,
+                           news.NewsDescription
+                       };
+
+            string url = "";
+            foreach (var pictureLink in data)
+            {
+                Literal LT = new Literal();
+                Literal LT1 = new Literal();
+
+                Literal L2 = new Literal();
+                Literal LT3 = new Literal();
+                Literal L4 = new Literal();
+                Literal LT5 = new Literal();
+                Literal L6 = new Literal();
+                Literal L7 = new Literal();
+                Literal L8 = new Literal();
+
+                url = pictureLink.NewsTitle.Trim();
+                // Newsid=" + pictureLink.Newsid + ">Read more</a></span>...
+
+                LT.Text = " <div style='margin-bottom:20px'><div><span style='font-size: 12pt;'>" + url + "</span></div></div>";
+                LT1.Text = " <div style='margin-bottom:20px'><div><span style='font-size: 12pt; '></span> <span style='color: #051603;'>  " + url + " <br/> <br/> <a href=EmployeeDetails.aspx?Newsid=" + pictureLink.Newsid + ">Read more</a></span>... <br/><br/> </span></div></div>";
+                L2.Text = " <div style='margin-bottom:20px'><div><span style='font-size: 12pt;'></span>...<span><a href=EmployeeDetails.aspx>Read more</a></span><br/><br/>  " + url + "</span></div></div>";
+                LT3.Text = " <div style='margin-bottom:20px'><div><span style='font-size: 12pt;'></span>...<span><a href=EmployeeDetails.aspx>Read more</a></span><br/><br/>  " + url + "</span></div></div>";
+                L4.Text = " <div style='margin-bottom:20px'><div><span style='font-size: 12pt;'></span>...<span><a href=EmployeeDetails.aspx>Read more</a></span><br/><br/>  " + url + "</span></div></div>";
+                LT5.Text = " <div style='margin-bottom:20px'><div><span style='font-size: 12pt;'></span>...<span><a href=EmployeeDetails.aspx>Read more</a></span><br/><br/>  " + url + "</span></div></div>";
+                L6.Text = " <div style='margin-bottom:20px'><div><span style='font-size: 12pt;'></span>...<span><a href=EmployeeDetails.aspx>Read more</a></span><br/><br/>  " + url + "</span></div></div>";
+                L7.Text = " <div style='margin-bottom:20px'><div><span style='font-size: 12pt;'></span>...<span><a href=EmployeeDetails.aspx>Read more</a></span><br/><br/>  " + url + "</span></div></div>";
+
+
+
+                d12.Controls.Add(LT1);
+                //Div12.Controls.Add(LT1);
+                //Div16.Controls.Add(L2);
+
+                //Div24.Controls.Add(LT3);
+                //Div10.Controls.Add(L4);
+                //Div10.Controls.Add(L4);
+                //Div14.Controls.Add(LT5);
+                //Div18.Controls.Add(L6);
+                //  div27.Controls.Add(L7);
+
+            }
+            BindNews();
+
+
+            //List<string> empid5 = (from dd in db.tbl_KRA_KPITB1s select dd.EmpID.ToString()).ToList();
+
+            //String empidd = Convert.ToString(Session["UserId"]);
+            //if (empid5.Contains(empidd))
+            //{
+            //    MultiView1.ActiveViewIndex = 8;
+            //    BindAllEmp1();
+            //}
+            //else
+            //{
+            //    Response.Redirect("KPIResposiblityMaster.aspx");
+            //}
+        }
+        else
+        {
+            Response.Redirect("Login.aspx");
+        }
+    }
+    public void BindNews()
+    {
+
+        int a = Convert.ToInt32(Request.QueryString["Newsid"]);
+        if (a == 0)
+        {
+
+            //MultiView2.ActiveViewIndex = 13;
+        }
+        else
+        {
+            MultiView1.ActiveViewIndex = 14;
+            var Data = (from d in db.MasterNewsTBs
+                        where d.Newsid == (a)
+                        select d).First();
+
+            lbltagline.InnerText = Data.NewsTitle.Trim();
+            lblStory.InnerText = Data.NewsDescription;
+            // lblsource.Text = Data.source_line;
+            //string NewSubstring = WebUtility.HtmlDecode(Data.article_content);
+            //lblfulltext.InnerHtml = NewSubstring;
+            imgevent.ImageUrl = "~/Images/" + Data.NewsImage;
+            //+ ".jpg";
+        }
+    }
+
+    public void BindAllSelfDev()
+    {
+        bool Status = g.CheckAdmin(Convert.ToInt32(Session["UserId"]));
+
+        if (Status == true)
+        {
+
+            //var EmpData = (from d in HR.EmployeeTBs
+            //               join n in HR.MasterDeptTBs on d.DeptId equals n.DeptID
+            //               select new
+            //               {
+            //                   Name = d.Solitude == 0 ? "Mr" + " " + d.FName + " " + d.MName + " " + d.Lname : d.Solitude == 1 ? "Ms" + " " + d.FName + " " + d.MName + " " + d.Lname : d.Solitude == 2 ? "Mrs" + " " + d.FName + " " + d.MName + " " + d.Lname : "Dr." + " " + d.FName + " " + d.MName + " " + d.Lname,
+            //                   Name1 = d.Solitude == 0 ? "Mr" + " " + d.FName + " " + d.MName + " " + d.Lname : d.Solitude == 1 ? "Ms" + " " + d.FName + " " + d.MName + " " + d.Lname : d.Solitude == 2 ? "Mrs" + " " + d.FName + " " + d.MName + " " + d.Lname : "Dr." + " " + d.FName + " " + d.MName + " " + d.Lname,
+            //                   d.FName,
+            //                   d.Lname,
+            //                   d.EmployeeId,
+            //                   d.BirthDate,
+            //                   d.Email,
+            //                   DOJ1 = d.DOJ,
+            //                   d.PanNo,
+            //                   d.ContactNo,
+            //                   d.PassportNo,
+            //                   n.DeptName,
+            //                   emnae = d.FName + " " + d.Lname
+            //               });
+
+
+
+            //grd_Emp.DataSource = EmpData;
+            //grd_Emp.DataBind();
+
+
+        }
+        else
+        {
+
+            var EmpData = (from d in db.EmployeeTBs
+                           join n in db.MasterDeptTBs on d.DeptId equals n.DeptID
+                           join des in db.MasterDesgTBs on d.DesgId equals des.DesigID
+                           join us in db.RegistrationTBs on d.EmployeeId equals us.EmployeeId
+                           join cp in db.CompanyInfoTBs on d.CompanyId equals cp.CompanyId
+                           where us.EmployeeId == Convert.ToInt32(Session["UserId"])
+
+                           select new
+                           {
+                               Name = d.Solitude == 0 ? "Mr" + " " + d.FName + " " + d.MName + " " + d.Lname : d.Solitude == 1 ? "Ms" + " " + d.FName + " " + d.MName + " " + d.Lname : d.Solitude == 2 ? "Mrs" + " " + d.FName + " " + d.MName + " " + d.Lname : "Dr." + " " + d.FName + " " + d.MName + " " + d.Lname,
+                               Name1 = d.Solitude == 0 ? "Mr" + " " + d.FName + " " + d.MName + " " + d.Lname : d.Solitude == 1 ? "Ms" + " " + d.FName + " " + d.MName + " " + d.Lname : d.Solitude == 2 ? "Mrs" + " " + d.FName + " " + d.MName + " " + d.Lname : "Dr." + " " + d.FName + " " + d.MName + " " + d.Lname,
+                               d.FName,
+                               d.Lname,
+                               cp.CompanyName,
+                               des.DesigName,
+                               d.EmployeeId,
+                               d.BirthDate,
+                               d.Email,
+                               DOJ1 = d.DOJ,
+                               d.PanNo,
+                               d.ContactNo,
+                               d.PassportNo,
+                               n.DeptName,
+                               emnae = d.FName + " " + d.Lname
+                           });
+
+
+            //DataTable dt = g.ReturnData(EmpData);
+            grd_Emp.DataSource = EmpData;
+            grd_Emp.DataBind();
+            //  lblcount.Text = EmpData.Count().ToString();
+
+        }
+
+    }
+
+
+    private void BindAllSwot()
+    {
+        var swotStrength = (from sf in db.SWOTStrTBs
+
+                            where sf.Empid == Convert.ToInt32(Session["UserId"])
+                            select new
+                            {
+                                sf.StrID,
+                                sf.Answer,
+                                sf.SWOTType
+
+
+                            }).Distinct().OrderBy(d => d.SWOTType);
+        if (swotStrength.Count() > 0)
+        {
+            GridviewSWOTStrength.DataSource = swotStrength;
+            GridviewSWOTStrength.DataBind();
+
+        }
+        else
+        {
+            GridviewSWOTStrength.DataSource = null;
+            GridviewSWOTStrength.DataBind();
+
+
+        }
+
+
+    }
+    protected void imgeditpSren_Click(object sender, ImageClickEventArgs e)
+    {
+        btnAddswotSTR.Visible = false;
+
+        MultiView1.ActiveViewIndex = 13;
+        ImageButton imgedit = (ImageButton)sender;
+        string ItemId = imgedit.CommandArgument;
+        // dtstr = (DataTable)ViewState["dtstr"];
+        Session["strenght"] = ItemId;
+
+        SWOTStrTB mt = db.SWOTStrTBs.Where(s => s.StrID == Convert.ToInt32(ItemId)).First();
+        ddlqueststr.SelectedValue = mt.SWOTType;
+        txtAnswerstr.Text = mt.Answer;
+
+
+
+        BtnSWOT.Text = "Update";
+
+
+
+        GridviewSWOTStrength.DataSource = dtstr;
+        GridviewSWOTStrength.DataBind();
+    }
+    protected void BtnaddMoreSWOT_Click(object sender, EventArgs e)
+    {
+        ddlqueststr.SelectedIndex = -1;
+        txtAnswerstr.Text = "";
+        //Clear();
+        MultiView1.ActiveViewIndex = 13;
+
+        grdswotStr.DataSource = null;
+        grdswotStr.DataBind();
+
+
+    }
+    protected void BtnPrintSWOT_Click(object sender, EventArgs e)
+    {
+
+        int emp14 = Convert.ToInt32(lblempid.Text);
+
+
+        dt1 = g.ReturnData("SELECT (CASE  WHEN [t1].[Solitude] = 0 THEN CONVERT(NVarChar(156),(((('Mr ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname])  WHEN [t1].[Solitude] = 1 THEN CONVERT(NVarChar(156),(((('Ms ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname]) WHEN [t1].[Solitude] = 2 THEN (((('Mrs ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname] ELSE (((('Dr. ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname] END) AS [Name], [t2].[CompanyName], [t3].[DeptName], [t4].[DesigName], [t0].[Reveiw],'100'+''+CONVERT(varchar, [t1].[EmployeeId] )as EmployeeId FROM [dbo].[SWOTDetailsTB] AS [t0] LEFT OUTER JOIN [dbo].[EmployeeTB] AS [t1] ON [t1].[EmployeeId] = [t0].[EmpID]  LEFT OUTER JOIN [dbo].[CompanyInfoTB] AS [t2] ON [t2].[CompanyId] = [t1].[CompanyId] LEFT OUTER JOIN [dbo].[MasterDeptTB] AS [t3] ON [t3].[DeptID] = [t1].[DeptId] LEFT OUTER JOIN [dbo].[MasterDesgTB] AS [t4] ON [t4].[DesigID] = [t1].[DesgId] WHERE [t0].[EmpID] = '" + Convert.ToInt32(emp14) + "'");
+        Session["dt1"] = dt1;
+
+
+        dt2 = g.ReturnData(" SELECT [Answer] FROM [SWOTStrTB] where  [SWOTType]='Strengths' and Empid = '" + Convert.ToInt32(emp14) + "'");
+        Session["dt2"] = dt2;
+
+        dt3 = g.ReturnData("SELECT [Answer] FROM [SWOTStrTB] where  [SWOTType]='Weekness' and Empid = '" + Convert.ToInt32(emp14) + "'");
+        Session["dt3"] = dt3;
+
+        dt4 = g.ReturnData("  SELECT [Answer] FROM [SWOTStrTB] where  [SWOTType]='Threats' and Empid = '" + Convert.ToInt32(emp14) + "'");
+        Session["dt4"] = dt4;
+
+        dt5 = g.ReturnData("SELECT [Answer] FROM [SWOTStrTB] where  [SWOTType]='Opportunities' and Empid = '" + Convert.ToInt32(emp14) + "'");
+        Session["dt5"] = dt5;
+
+
+
+        string ss = "window.open('SWOTViewer.aspx?Type=All','mywindow','width=1000,height=700,left=200,top=1,screenX=100,screenY=100,toolbar=no,location=no,directories=no,status=yes,menubar=no,scrollbars=yes,copyhistory=yes,resizable=no')";
+        string script = "<script language='javascript'>" + ss + "</script>";
+        ScriptManager.RegisterStartupScript(this, this.GetType(), "PopUpWindow", script, false);
+
+
+
+
+
+        //  #region 555555
+
+
+
+
+        //  Label42.Attributes.Add("style", "margin-right:30px");
+        //  BindAllSwot();
+        //  Image4.Visible = true; ;
+        //  Label47.Visible = true;
+        //  Label48.Visible = true;
+        //  Label49.Visible = true;
+        //  Label50.Visible = true;
+        //  Label51.Visible = true;
+        //  Label52.Visible = true;
+        //  Label53.Visible = true;
+        //  Label54.Visible = true;
+        //  Label55.Visible = true;
+        //  Label56.Visible = true;
+        //  Div7.Visible = true;
+
+        //  BTNprint.Visible = false;
+        ////  Div3.Attributes.Remove("style");
+        //  btnaddnew.Visible = false;
+        //  GridviewSWOTStrength.Attributes.Add("style", "Width:690px;");
+
+        //  GridviewSWOTStrength.Columns[3].Visible = false;
+        // // GridView1.Columns[7].Visible = false;
+        //  Label49.Text = txtfname.Text + ' ' + txtmname.Text + ' ' + txtlname.Text;
+        //  Label53.Text = lblCompany.Text;
+        //  Label55.Text = lbldept.Text;
+
+        //  Label51.Text = "100" + lblempid.Text;
+        //  Label57.Text = lblDesignation.Text;
+
+
+
+
+        //  GridviewSWOTStrength.AllowPaging = false;
+        //  //  BindAllSelfDevNew();
+
+        //  GridviewSWOTStrength.DataBind();
+        //  StringWriter sw = new StringWriter();
+        //  HtmlTextWriter hw = new HtmlTextWriter(sw);
+        //  GridviewSWOTStrength.Columns[3].Visible = false;
+        //  EmpProfile.RenderControl(hw);
+        //  string gridHTML = sw.ToString().Replace("\"", "'")
+        //      .Replace(System.Environment.NewLine, "");
+        //  StringBuilder sb = new StringBuilder();
+        //  sb.Append("<script type = 'text/javascript'>");
+        //  sb.Append("window.onload = new function(){");
+        //  sb.Append("var printWin = window.open('', '', 'left=0");
+        //  sb.Append(",top=0,width=1000,height=600,status=0');");
+        //  sb.Append("printWin.document.write(\"");
+        //  sb.Append(gridHTML);
+        //  sb.Append("\");");
+        //  sb.Append("printWin.document.close();");
+        //  sb.Append("printWin.focus();");
+        //  sb.Append("printWin.print();");
+        //  sb.Append("printWin.close();};");
+        //  sb.Append("</script>");
+        //  ClientScript.RegisterStartupScript(this.GetType(), "GridPrint", sb.ToString());
+        //  GridviewSWOTStrength.AllowPaging = true;
+        //  GridviewSWOTStrength.DataBind();
+
+
+        //  Image4.Visible = false; ;
+        //  Label47.Visible = false;
+        //  Label48.Visible = false;
+        //  Label49.Visible = false;
+        //  Label50.Visible = false;
+        //  Label51.Visible = false;
+        //  Label52.Visible = false;
+        //  Label53.Visible = false;
+        //  Label54.Visible = false;
+        //  Label55.Visible = false;
+        //  Label56.Visible = false;
+        //  Div7.Visible = false;
+
+
+        //  #endregion
+        BTNprint.Visible = true;
+        //   Div3.Attributes.Add("style", "height:400px;overflow:scroll");
+        btnaddnew.Visible = true;
+
+        lblEmployeeid.Visible = false;
+
+        lblEmployeeidText.Visible = false;
+
+        GridviewSWOTStrength.Columns[3].Visible = true;
+
+    }
+
+
+    protected void GridviewSWOTStrength_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        for (int rowIndex = GridviewSWOTStrength.Rows.Count - 2; rowIndex >= 0; rowIndex--)
+        {
+            GridViewRow gvrow = GridviewSWOTStrength.Rows[rowIndex];
+            GridViewRow gvprivous = GridviewSWOTStrength.Rows[rowIndex + 1];
+
+            for (int cellCount = 0; cellCount < gvrow.Cells.Count; cellCount++)
+            {
+                if (cellCount == 1)
+                {
+                    if (gvrow.Cells[cellCount].Text == gvprivous.Cells[cellCount].Text)
+                    {
+                        if (gvprivous.Cells[cellCount].RowSpan < 2)
+                        {
+                            gvrow.Cells[cellCount].RowSpan = 2;
+                        }
+
+                        else
+                        {
+                            gvrow.Cells[cellCount].RowSpan = gvprivous.Cells[cellCount].RowSpan + 1;
+                        }
+                        gvprivous.Cells[cellCount].Visible = false;
+                    }
+                }
+
+            }
+        }
+    }
+
+    protected void GridViewSelfDeve_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        for (int rowIndex = GridViewSelfDeve.Rows.Count - 2; rowIndex >= 0; rowIndex--)
+        {
+            GridViewRow gvrow = GridViewSelfDeve.Rows[rowIndex];
+            GridViewRow gvprivous = GridViewSelfDeve.Rows[rowIndex + 1];
+
+            for (int cellCount = 0; cellCount < gvrow.Cells.Count; cellCount++)
+            {
+                if (cellCount == 1)
+                {
+                    if (gvrow.Cells[cellCount].Text == gvprivous.Cells[cellCount].Text)
+                    {
+                        if (gvprivous.Cells[cellCount].RowSpan < 2)
+                        {
+                            gvrow.Cells[cellCount].RowSpan = 2;
+                        }
+
+                        else
+                        {
+                            gvrow.Cells[cellCount].RowSpan = gvprivous.Cells[cellCount].RowSpan + 1;
+                        }
+                        gvprivous.Cells[cellCount].Visible = false;
+                    }
+                }
+
+            }
+        }
+
+    }
+    protected void imgeditSelfDev_Click(object sender, ImageClickEventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 11;
+
+        ImageButton imgedit = (ImageButton)sender;
+        string ProfId = imgedit.CommandArgument;
+        Session["ProfessId"] = imgedit.CommandArgument;
+
+
+        tbl_ProfessinalTB mt = db.tbl_ProfessinalTBs.Where(s => s.ProfessinalId == Convert.ToInt32(ProfId)).First();
+        ddlSelfDevelopment.SelectedValue = Convert.ToInt32(mt.SelfDevId).ToString();
+        txtProfessinalDescr.Text = mt.ProfessinalDescr;
+        txtProfessTimeframe.Text = mt.ProfessTimeFrame;
+        txtProfessValues.Text = mt.ProfessValues;
+
+
+
+        btnselfdevFinalSave.Text = "Update";
+        BtnADDProfessinal.Visible = false;
+        grd_Professonal.Visible = false;
+
+        Div4.Visible = false;
+
+
+    }
+    protected void GridViewSelfDeve_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        GridViewSelfDeve.PageIndex = e.NewPageIndex;
+        BindAllSelfDevNew();
+        GridViewSelfDeve.DataBind();
+    }
+
+    public void BindAllSelfDevNew()
+    {
+
+
+        var ProfessData1 = (from d in db.tbl_ProfessinalTBs
+                            join sf in db.SelfDevelopmentNewTBs on d.SelfDevId equals sf.SelfDevId
+                            where d.Empid == Convert.ToInt32(Session["UserId"])
+                            select new
+                            {
+                                d.ProfessinalId,
+                                sf.SelfdevepType,
+                                d.ProfessinalDescr,
+                                d.ProfessTimeFrame,
+                                d.ProfessValues
+
+                            }).Distinct().OrderBy(d => d.SelfdevepType);
+        if (ProfessData1.Count() > 0)
+        {
+            GridViewSelfDeve.DataSource = ProfessData1;
+            GridViewSelfDeve.DataBind();
+
+        }
+        else
+        {
+            GridViewSelfDeve.DataSource = null;
+            GridViewSelfDeve.DataBind();
+
+
+        }
+
+
+    }
+
+    public override void VerifyRenderingInServerForm(Control control)
+    {
+        /*Verifies that the control is rendered */
+    }
+
+    public void BindAllEmp1()
+    {
+
+
+        var EmpData = (from d in db.tbl_KRA_KPITB1s
+                       where d.EmpID == Convert.ToInt32(Session["UserId"])
+                       select new
+                       {
+                           d.KRPId,
+                           d.Role,
+                           d.Resposiblity,
+                           d.KeyResultAreas,
+                           d.KeyPerformance,
+                           d.Target,
+                           d.Remark
+                       }).Distinct().OrderBy(d => d.Role);
+        if (EmpData.Count() > 0)
+        {
+            GridView1.DataSource = EmpData;
+            GridView1.DataBind();
+
+        }
+        else
+        {
+            GridView1.DataSource = null;
+            GridView1.DataBind();
+
+
+        }
+
+
+    }
+
+    public void BindAllEmp()
+    {
+        try
+        {
+            var data = from dt in db.EmployeeTBs
+                       where dt.EmployeeFlag != 0 && dt.EmployeeId == Convert.ToInt32(Session["UserId"].ToString())
+                       select dt;
+            string empid = Session["UserId"].ToString();
+            if (data.Count() > 0)
+            {
+
+                #region code for employee which profile is added
+
+
+                //bool Status = g.CheckAdmin(Convert.ToInt32(Session["UserId"]));
+
+                //if (Status == true)
+                //{
+                int empidd = Convert.ToInt32(empid);
+                // int empidd = Convert.ToInt32(Request.QueryString[0]);
+                var EmpData = (from d in db.EmployeeTBs
+                               join n in db.MasterDeptTBs on d.DeptId equals n.DeptID
+                               join us in db.RegistrationTBs on d.EmployeeId equals us.EmployeeId
+                               where d.EmployeeId == Convert.ToInt32(empidd)
+                               select d).First();
+
+                if (EmpData.Photo == null || EmpData.Photo == "")
+                {
+                    PhotoID.ImageUrl = "~/Images/download (1).jpg";
+                }
+                else
+                {
+                    PhotoID.ImageUrl = "Attachments/" + EmpData.Photo;
+                }
+                //personal details
+                if (EmpData.Solitude == 0)
+                {
+                    lblmr_mrs.Text = "Mr";
+                }
+                if (EmpData.Solitude == 1)
+                {
+                    lblmr_mrs.Text = "Ms";
+                }
+                if (EmpData.Solitude == 2)
+                {
+                    lblmr_mrs.Text = "Mrs";
+                }
+                if (EmpData.Solitude == 3)
+                {
+                    lblmr_mrs.Text = "Dr.";
+                }
+
+
+                txtfname.Text = EmpData.FName;
+                txtmname.Text = EmpData.MName;
+                txtlname.Text = EmpData.Lname;
+
+
+                lblDOB.Text = EmpData.BirthDate.Value.ToString("MM/dd/yyyy");
+                if (EmpData.Gender == "0")
+                { lblGender.Text = "Male"; }
+                else
+                { lblGender.Text = "Female"; }
+
+                lblbloodgroup.Text = EmpData.BloodGroup;
+                lblmarritalstatus.Text = EmpData.MaritalStaus;
+                lblcontactno.Text = EmpData.ContactNo;
+                lblaltcontact.Text = EmpData.AltContactNo;
+                lblpan.Text = EmpData.PanNo;
+                lblpassport.Text = EmpData.PassportNo;
+                lblemail.Text = EmpData.Email;
+                lblpersonalemail.Text = EmpData.personalEmail;
+                //company Details
+                lblCompany.Text = (from m in db.CompanyInfoTBs
+                                   where m.CompanyId == EmpData.CompanyId
+                                   select m.CompanyName).First();
+                lbldept.Text = (from m1 in db.MasterDeptTBs
+                                where m1.DeptID == EmpData.DeptId
+                                select m1.DeptName).First();
+
+
+
+
+                // For Reporting Head
+
+
+                DataSet dsreport = g.ReturnData1("select ReportingStatus from EmployeeTB where EmployeeId='" + empid + "'");
+                if (dsreport.Tables[0].Rows.Count > 0)
+                {
+
+                    if (dsreport.Tables[0].Rows.Count > 0)
+                    {
+                        if (dsreport.Tables[0].Rows[0][0].ToString() == "")
+                        {
+                        }
+                        else
+                        {
+                            int empid12 = Convert.ToInt32(dsreport.Tables[0].Rows[0][0].ToString());
+
+                            lblReportingHead.Text = (from m2 in db.EmployeeTBs
+                                                     where m2.EmployeeId == empid12
+                                                     select m2.FName + ' ' + m2.MName + ' ' + m2.Lname).First();
+                        }
+
+                    }
+
+                }
+
+
+
+                lblDesignation.Text = (from m in db.MasterDesgTBs
+                                       where m.DesigID == EmpData.DesgId
+                                       select m.DesigName).First();
+                lblempid.Text = EmpData.EmployeeId.ToString();
+                lblMachineID.Text = EmpData.MachineID;
+
+                //   lblJoining.Text = EmpData.DOJ.Value.ToString("MM/dd/yyyy");
+
+
+
+                lblJoining.Text = EmpData.DOJ.Value.ToString("dd/MM/yyyy");
+
+                // check Employee Releiving Status
+                var checkrelieveStatus = from ch in db.EmployeeTBs
+                                         where ch.EmployeeId == Convert.ToInt32(empidd)
+                                         select new
+                                         {
+                                             ch.RelivingStatus,
+                                             ch.RelivingDate
+                                         };
+
+                foreach (var item in checkrelieveStatus)
+                {
+                    if (item.RelivingStatus == null)
+                    {
+                        Label8.Visible = false;
+                        lblRelievingDate.Visible = false;
+                    }
+                    else
+                    {
+                        Label8.Visible = true;
+
+                        lblRelievingDate.Visible = true;
+                        DateTime dtrelivedate = Convert.ToDateTime(item.RelivingDate);
+                        lblRelievingDate.Text = dtrelivedate.ToString("dd/MM/yyyy");
+                    }
+                }
+
+
+                lblprobation.Text = EmpData.ProbationPeriod;
+                lblCnfrmdate.Text = EmpData.ConfirmDate.Value.ToString("MM/dd/yyyy");
+                lblsalary.Text = EmpData.NetSalary;
+                //address details
+                //lblCountry.Text = EmpData.CountryTB.CountryName;
+                //  lblstate.Text = EmpData.StateTB.StateName;
+                //lblCity.Text = EmpData.CityTB.CityName;
+                lblpin.Text = EmpData.CurPin;
+                lblLandmark.Text = EmpData.CurLandmark;
+                lblnamelandlord.Text = EmpData.CurRentName;
+                lblcntlandlord.Text = EmpData.CurRentContact;
+
+                //lblCountryper.Text = EmpData.CountryTB.CountryName;
+                //    lblstateper.Text = EmpData.StateTB.StateName;
+                //lblCityper.Text = EmpData.CityTB.CityName;
+                lblpinPinCode.Text = EmpData.PerPin;
+                lblLandMarkper.Text = EmpData.PerLandmark;
+                lbllandlordper.Text = EmpData.PerRentName;
+                lbllandCntper.Text = EmpData.PerRentContact;
+                //Education
+                var EDU = (from m in db.EmpQualificationTBs
+                           join n in db.MasterEducationTBs on m.EducationId equals n.EducationId
+                           where m.EmployeeId == EmpData.EmployeeId
+                           select new
+                           {
+                               n.EducationId,
+                               n.EducationName,
+                               College = m.College_School,
+                               m.University,
+                               m.YearofPassing,
+                               ObtainPercent = m.Perc
+                           }).ToList();
+                grd.DataSource = EDU;
+                grd.DataBind();
+
+                foreach (var item in EDU)
+                {
+                    Dt = (DataTable)ViewState["DT"];
+                    if (ViewState["DT"] == null)
+                    {
+                        Dt = new DataTable();
+                        DataColumn EducationId = Dt.Columns.Add("EducationId");
+                        DataColumn EducationName = Dt.Columns.Add("EducationName");
+                        DataColumn College = Dt.Columns.Add("College");
+                        DataColumn University = Dt.Columns.Add("University");
+                        DataColumn YearOfPassing = Dt.Columns.Add("YearOfPassing");
+                        DataColumn ObtainPercent = Dt.Columns.Add("ObtainPercent");
+
+                    }
+                    else
+                    {
+                        Dt = (DataTable)ViewState["DT"];
+                    }
+
+                }
+                //experince
+                var Exp = (from m in db.EmpExprienceTBs
+                           where m.EmployeeId == EmpData.EmployeeId
+                           select new
+                           {
+                               m.CompanyName,
+                               Location = m.CompanyAddress,
+                               JoiningDate = m.JoiningDate,
+                               RelivingDate = m.RelvDate,
+                               RefPerson = m.RefPerson,
+                               ContactNo = m.refContactNo,
+                               Department = m.Department,
+                               Designation = m.Designation
+
+                           }).ToList();
+                grdExperience.DataSource = Exp;
+                grdExperience.DataBind();
+                #endregion
+
+            }
+            else
+            {
+                #region code when employeeprofile is not added
+                var EmpData = (from d in db.EmployeeTBs
+
+                               join us in db.RegistrationTBs on d.EmployeeId equals us.EmployeeId
+                               where d.EmployeeId == Convert.ToInt32(empid)
+                               select d).OrderBy(S => S.EmployeeId).First();
+
+                if (EmpData.Photo == null || EmpData.Photo == "")
+                {
+                    PhotoID.ImageUrl = "~/Images/download (1).jpg";
+                }
+                else
+                {
+                    PhotoID.ImageUrl = "Attachments/" + EmpData.Photo;
+                }
+
+                //   PhotoID.ImageUrl = "Attachments/" + EmpData.Photo;
+
+                //personal details
+                if (EmpData.Solitude == 0)
+                {
+                    lblmr_mrs.Text = "Mr";
+                }
+                if (EmpData.Solitude == 1)
+                {
+                    lblmr_mrs.Text = "Ms";
+                }
+                if (EmpData.Solitude == 2)
+                {
+                    lblmr_mrs.Text = "Mrs";
+                }
+                if (EmpData.Solitude == 3)
+                {
+                    lblmr_mrs.Text = "Dr.";
+                }
+                txtfname.Text = EmpData.FName;
+                txtmname.Text = EmpData.MName;
+                txtlname.Text = EmpData.Lname;
+
+                if (!string.IsNullOrEmpty(EmpData.BirthDate.Value.ToString()))
+                {
+                    lblDOB.Text = EmpData.BirthDate.Value.ToString("MM/dd/yyyy");
+                }
+                if (EmpData.Gender == "0")
+                { lblGender.Text = "Male"; }
+                else
+                { lblGender.Text = "Female"; }
+
+                lblbloodgroup.Text = EmpData.BloodGroup;
+                lblmarritalstatus.Text = EmpData.MaritalStaus;
+                lblcontactno.Text = EmpData.ContactNo;
+                lblaltcontact.Text = EmpData.AltContactNo;
+                lblpan.Text = EmpData.PanNo;
+                lblpassport.Text = EmpData.PassportNo;
+                lblemail.Text = EmpData.Email;
+                lblpersonalemail.Text = EmpData.personalEmail;
+                //company Details
+                if (EmpData.CompanyId != null)
+                {
+                    lblCompany.Text = (from m in db.CompanyInfoTBs
+                                       where m.CompanyId == EmpData.CompanyId
+                                       select m.CompanyName).First();
+                }
+                if (EmpData.DeptId != null)
+                {
+                    lbldept.Text = (from m1 in db.MasterDeptTBs
+                                    where m1.DeptID == EmpData.DeptId
+                                    select m1.DeptName).First();
+                }
+                // lblCompany.Text = "";
+                //  lbldep.Text = "";
+                // For Reporting Head
+                DataSet dsreport = g.ReturnData1("select ReportingStatus from EmployeeTB where EmployeeId='" + empid + "'");
+
+                if (dsreport.Tables[0].Rows.Count > 0)
+                {
+                    if (dsreport.Tables[0].Rows.ToString() != null)
+                    {
+                        if (dsreport.Tables[0].Rows.Count > 0)
+                        {
+                            if (dsreport.Tables[0].Rows[0][0].ToString() == "")
+                            {
+                            }
+                            else
+                            {
+                                int empid12 = Convert.ToInt32(dsreport.Tables[0].Rows[0][0].ToString());
+
+                                lblReportingHead.Text = (from m2 in db.EmployeeTBs
+                                                         where m2.EmployeeId == empid12
+                                                         select m2.FName + ' ' + m2.MName + ' ' + m2.Lname).First();
+                            }
+
+                        }
+                    }
+                }
+
+                if (EmpData.DesgId != null)
+                {
+                    lblDesignation.Text = (from m in db.MasterDesgTBs
+                                           where m.DesigID == EmpData.DesgId
+                                           select m.DesigName).First();
+                    lblempid.Text = EmpData.EmployeeId.ToString();
+                    lblMachineID.Text = EmpData.MachineID;
+                }
+                // lblJoining.Text = EmpData.DOJ.Value.ToString("MM/dd/yyyy");
+
+                lblJoining.Text = EmpData.DOJ.Value.ToString("dd/MM/yyyy");
+
+                // check Employee Releiving Status
+                var checkrelieveStatus = from ch in db.EmployeeTBs
+                                         where ch.EmployeeId == Convert.ToInt32(empid)
+                                         select new
+                                         {
+                                             ch.RelivingStatus,
+                                             ch.RelivingDate
+                                         };
+
+                foreach (var item in checkrelieveStatus)
+                {
+                    if (item.RelivingStatus == null)
+                    {
+                        Label8.Visible = false;
+                        lblRelievingDate.Visible = false;
+                    }
+                    else
+                    {
+                        Label8.Visible = true;
+
+                        lblRelievingDate.Visible = true;
+                        DateTime dtrelivedate = Convert.ToDateTime(item.RelivingDate);
+                        lblRelievingDate.Text = dtrelivedate.ToString("dd/MM/yyyy");
+                    }
+                }
+
+
+
+
+                lblprobation.Text = EmpData.ProbationPeriod;
+                if (EmpData.ConfirmDate != null)
+                {
+
+                    lblCnfrmdate.Text = EmpData.ConfirmDate.Value.ToString("MM/dd/yyyy");
+                }
+                lblsalary.Text = EmpData.NetSalary;
+                //address details
+                if (EmpData.CurCountry != null)
+                {
+
+                    //lblCountry.Text = EmpData.CountryTB.CountryName;
+                    //   lblstate.Text = EmpData.StateTB.StateName;
+                    //lblCity.Text = EmpData.CityTB.CityName;
+                    lblpin.Text = EmpData.CurPin;
+                    lblLandmark.Text = EmpData.CurLandmark;
+                    lblnamelandlord.Text = EmpData.CurRentName;
+                    lblcntlandlord.Text = EmpData.CurRentContact;
+                }
+                if (EmpData.PerCountry != null)
+                {
+
+                    //lblCountryper.Text = EmpData.CountryTB.CountryName;
+                    //  lblstateper.Text = (from m in db.StateTBs where m.StateId == EmpData.PerState select m.StateName).First();
+                    lblCityper.Text = (from m in db.CityTBs where m.CityId == EmpData.PerCity select m.CityName).First();
+                    lblpinPinCode.Text = EmpData.PerPin;
+                    lblLandMarkper.Text = EmpData.PerLandmark;
+                    lbllandlordper.Text = EmpData.PerRentName;
+                    lbllandCntper.Text = EmpData.PerRentContact;
+                }
+                //Education
+                var EDU = (from m in db.EmpQualificationTBs
+                           join n in db.MasterEducationTBs on m.EducationId equals n.EducationId
+                           where m.EmployeeId == EmpData.EmployeeId
+                           select new
+                           {
+                               n.EducationId,
+                               n.EducationName,
+                               College = m.College_School,
+                               m.University,
+                               m.YearofPassing,
+                               ObtainPercent = m.Perc
+                           }).ToList();
+                if (EDU.Count() > 0)
+                {
+
+                    grd.DataSource = EDU;
+                    grd.DataBind();
+
+                    foreach (var item in EDU)
+                    {
+                        Dt = (DataTable)ViewState["DT"];
+                        if (ViewState["DT"] == null)
+                        {
+                            Dt = new DataTable();
+                            DataColumn EducationId = Dt.Columns.Add("EducationId");
+                            DataColumn EducationName = Dt.Columns.Add("EducationName");
+                            DataColumn College = Dt.Columns.Add("College");
+                            DataColumn University = Dt.Columns.Add("University");
+                            DataColumn YearOfPassing = Dt.Columns.Add("YearOfPassing");
+                            DataColumn ObtainPercent = Dt.Columns.Add("ObtainPercent");
+
+                        }
+                        else
+                        {
+                            Dt = (DataTable)ViewState["DT"];
+                        }
+
+                    }
+                }
+                //experince
+                var Exp = (from m in db.EmpExprienceTBs
+                           where m.EmployeeId == EmpData.EmployeeId
+                           select new
+                           {
+                               m.CompanyName,
+                               Location = m.CompanyAddress,
+                               JoiningDate = m.JoiningDate,
+                               RelivingDate = m.RelvDate,
+                               RefPerson = m.RefPerson,
+                               ContactNo = m.refContactNo,
+                               Department = m.Department,
+                               Designation = m.Designation
+
+                           }).ToList();
+                if (Exp.Count() > 0)
+                {
+
+                    grdExperience.DataSource = Exp;
+                    grdExperience.DataBind();
+                }
+                #endregion
+            }
+            //}
+            //else
+            //{
+            //    Response.Redirect("EmployeeProfilePage.aspx");
+            //}
+        }
+        catch
+        {
+
+        }
+    }
+
+
+
+    protected void PersonalDetails_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 0;
+    }
+    protected void ComapanyDetails_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 1;
+    }
+    protected void AdderessDetails_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 2;
+    }
+    protected void EducationalDetails_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 3;
+    }
+    protected void Experience_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 4;
+    }
+    protected void grd_Leavependings_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+    }
+    protected void LeaveDetails_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 5;
+        fillpendingLeaves();
+    }
+    private void fillpendingLeaves()
+    {
+        int emp1 = int.Parse(Session["UserId"].ToString());
+        var pendingLeaves = (from m in db.LeaveAllocationTBs
+                             join n in db.masterLeavesTBs on m.LeaveID equals n.LeaveID
+                             where m.EmployeeID == emp1 && ((DateTime)m.FromDateAllocation).Year == DateTime.Today.Year
+                             select new
+                             {
+                                 LeaveName = n.LeaveName,
+                                 m.LeaveID,
+                                 m.TotalAllocatedLeaves,
+                                 m.PendingLeaves
+                             });
+        grd_Leavependings.DataSource = pendingLeaves;
+        grd_Leavependings.DataBind();
+    }
+    private void AdminGridJD()
+    {
+        var AllData = from da in db.JDMasterTBs
+                      select new
+                      {
+
+                          da.JobDesc,
+                          da.JDId,
+                          Name = da.EmployeeTB.FName + ' ' + da.EmployeeTB.MName + ' ' + da.EmployeeTB.Lname,
+
+
+                          Status = da.Status == 0 ? "Active" : "In Active"
+                      };
+
+        //grd_JD.DataSource = AllData;
+        //grd_JD.DataBind();
+    }
+
+
+    private void EmployeeGridJD()
+    {
+        var AllData = from da in db.JDMasterTBs
+                      where da.EmpID == Convert.ToInt32(Session["UserId"])
+                      select new
+                      {
+
+                          da.JobDesc,
+                          da.JDId,
+                          Name = da.EmployeeTB.FName + ' ' + da.EmployeeTB.MName + ' ' + da.EmployeeTB.Lname,
+
+
+                          Status = da.Status == 0 ? "Active" : "In Active"
+                      };
+
+        //grd_JD.DataSource = AllData;
+        //grd_JD.DataBind();
+    }
+
+    private void AdminGridKRA()
+    {
+        var AllData = from da in db.KRAMasterTBs
+                      select new
+                      {
+
+                          da.KRA,
+                          da.KRAID,
+                          Name = da.EmployeeTB.FName + ' ' + da.EmployeeTB.MName + ' ' + da.EmployeeTB.Lname,
+
+
+                          Status = da.Status == 0 ? "Active" : "In Active"
+                      };
+        if (AllData.Count() > 0)
+        {
+            grdKRA.DataSource = AllData;
+            grdKRA.DataBind();
+        }
+        else
+        {
+            grdKRA.DataSource = AllData;
+            grdKRA.DataBind();
+
+        }
+
+    }
+
+    private void EmployeeGridKRA()
+    {
+        var AllData = from da in db.KRAMasterTBs
+                      where da.EmpId == Convert.ToInt32(Session["UserId"])
+                      select new
+                      {
+
+                          da.KRA,
+                          da.KRAID,
+                          Name = da.EmployeeTB.FName + ' ' + da.EmployeeTB.MName + ' ' + da.EmployeeTB.Lname,
+
+
+                          Status = da.Status == 0 ? "Active" : "In Active"
+                      };
+        if (AllData.Count() > 0)
+        {
+            grdKRA.DataSource = AllData;
+            grdKRA.DataBind();
+        }
+        else
+        {
+            grdKRA.DataSource = AllData;
+            grdKRA.DataBind();
+        }
+
+    }
+    private void BindAllDataKRA()
+    {
+        bool Status = g.CheckAdmin(Convert.ToInt32(Session["UserId"]));
+        // Check super Admin condition
+        if (Status == true)
+        {
+            AdminGridKRA();
+
+        }
+        else
+        {
+            EmployeeGridKRA();
+
+        }
+
+
+    }
+
+    private void BindAllDataJD()
+    {
+        bool Status = g.CheckAdmin(Convert.ToInt32(Session["UserId"]));
+        // Check super Admin condition
+        if (Status == true)
+        {
+            AdminGridJD();
+
+        }
+        else
+        {
+            EmployeeGridJD();
+
+        }
+
+    }
+    protected void lnlJD_Click(object sender, EventArgs e)
+    {
+        List<string> empid5 = (from dd in db.tbl_KRA_KPITB1s select dd.EmpID.ToString()).ToList();
+        Session["KRIPage"] = "2";
+        String empidd = Convert.ToString(Session["UserId"]);
+        if (empid5.Contains(empidd))
+        {
+            MultiView1.ActiveViewIndex = 8;
+            BindAllEmp1();
+        }
+        else
+        {
+            Response.Redirect("KPIResposiblityMaster.aspx");
+        }
+
+        //Response.Redirect("KPIResposiblityMaster.aspx");
+        //BindAllDataJD();
+    }
+
+    protected void BTNprint_Click(object sender, EventArgs e)
+    {
+        d1.Visible = true;
+        //Div3.Attributes.Remove("style");
+        //Div3.Style.Clear();
+        //   Div3.Attributes.Remove("style");
+        btnaddnew.Visible = false;
+        Label2.Visible = true;
+        Label27.Visible = true;
+        Label28.Visible = true;
+        Label30.Visible = true;
+        lblEmployeeName.Visible = true;
+        Label29.Visible = true;
+        Label31.Visible = true;
+        BTNprint.Visible = false;
+
+        lblEmployeeid.Visible = true;
+        Label5.Visible = true;
+
+        Label4.Visible = true;
+        lblEmployeeidText.Visible = true;
+
+        GridView1.Columns[7].Visible = false;
+        lblEmployeeName.Text = txtfname.Text + ' ' + txtmname.Text + ' ' + txtlname.Text;
+        Label29.Text = lblCompany.Text;
+        Label31.Text = lblDesignation.Text;
+        lblEmployeeid.Text = "100" + lblempid.Text;
+        Label5.Text = lbldept.Text;
+
+
+
+
+        GridView1.AllowPaging = false;
+        BindAllEmp1();
+        // GridView1.DataBind();
+        StringWriter sw = new StringWriter();
+        HtmlTextWriter hw = new HtmlTextWriter(sw);
+        GridView1.Columns[7].Visible = false;
+        JobDesc1.RenderControl(hw);
+        string gridHTML = sw.ToString().Replace("\"", "'")
+            .Replace(System.Environment.NewLine, "");
+        StringBuilder sb = new StringBuilder();
+        sb.Append("<script type = 'text/javascript'>");
+        sb.Append("window.onload = new function(){");
+        sb.Append("var printWin = window.open('', '', 'left=0");
+        sb.Append(",top=0,width=1000,height=600,status=0');");
+        sb.Append("printWin.document.write(\"");
+        sb.Append(gridHTML);
+        sb.Append("\");");
+        sb.Append("printWin.document.close();");
+        sb.Append("printWin.focus();");
+        sb.Append("printWin.print();");
+        sb.Append("printWin.close();};");
+        sb.Append("</script>");
+        ClientScript.RegisterStartupScript(this.GetType(), "GridPrint", sb.ToString());
+        GridView1.AllowPaging = true;
+        GridView1.DataBind();
+
+        //var logo = iTextSharp.text.Image.GetInstance(Server.MapPath("~/Images/childlogo.png"));
+        //logo.SetAbsolutePosition(870, 1600);
+        ////logo.Alignment=120;
+        //logo.WidthPercentage = 100;
+        //logo.ScaleToFit(200f, 310f);
+        //sb.Add(logo);
+
+
+        Label27.Visible = false;
+        Label28.Visible = false;
+        Label30.Visible = false;
+        lblEmployeeName.Visible = false;
+        Label29.Visible = false;
+        Label31.Visible = false;
+        GridView1.Columns[7].Visible = true;
+        btnaddnew.Visible = true;
+        // Div3.Attributes.Add("style", "height:400px;overflow:scroll");
+        BTNprint.Visible = true;
+        Label2.Visible = false;
+
+        lblEmployeeid.Visible = false;
+        Label5.Visible = false;
+
+        Label4.Visible = false;
+        lblEmployeeidText.Visible = false; d1.Visible = false;
+
+    }
+
+
+    protected void lnkKRA_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 7;
+        BindAllDataKRA();
+    }
+    protected void btnEditProfile_Click(object sender, EventArgs e)
+    {
+        int emp1 = int.Parse(Session["UserId"].ToString());
+        Response.Redirect("Employee.aspx?Empid=" + emp1);
+    }
+    protected void Button1_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 6;
+    }
+
+    protected void imgdelete1_Click(object sender, ImageClickEventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 1;
+        ImageButton imgdelete = (ImageButton)sender;
+        string ServiceId = imgdelete.CommandArgument;
+        //dtt = (DataTable)ViewState["dtt"];
+
+        //foreach (DataRow d in dtt.Rows)
+        //{
+        //    if (d[0].ToString() == imgdelete.CommandArgument)
+        //    {
+
+        //        d.Delete();
+        //        dtt.AcceptChanges();
+        //        break;
+        //    }
+        //}
+
+        //GridView1.DataSource = dtt;
+        //GridView1.DataBind();
+    }
+
+    protected void btnsubmit_Click(object sender, EventArgs e)
+    {
+        if (btnsubmit.Text == "Save")
+        {
+
+        }
+        else
+        {
+            string roll = Session["id"].ToString();
+            tbl_KRA_KPITB1 tb = db.tbl_KRA_KPITB1s.Where(d => d.KRPId == Convert.ToInt32(roll)).First();
+            tb.Role = txtRole.Text;
+            tb.Resposiblity = txtResposibility.Text;
+            tb.KeyResultAreas = txtkeyResultAreas.Text;
+            tb.KeyPerformance = txtKeyPerformanceIndicator.Text;
+            tb.Target = txtWorkTarget.Text;
+            tb.Remark = txtRemark.Text;
+
+            tb.EmpID = Convert.ToInt32(Session["UserId"]);
+
+            db.SubmitChanges();
+            BtnADDrole.Visible = true;
+
+        }
+
+        Response.Redirect("EmployeeDetails.aspx");
+
+    }
+
+    protected void imgedit1_Click(object sender, ImageClickEventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 9;
+        ImageButton imgedit = (ImageButton)sender;
+        string id = imgedit.CommandArgument;
+        Session["id"] = id;
+        //  dtt = (DataTable)ViewState["dtt"];
+
+        tbl_KRA_KPITB1 mt = db.tbl_KRA_KPITB1s.Where(s => s.KRPId == Convert.ToInt32(id)).First();
+        txtRole.Text = mt.Role;
+
+
+        txtResposibility.Text = mt.Resposiblity;
+        txtkeyResultAreas.Text = mt.KeyResultAreas;
+        txtKeyPerformanceIndicator.Text = mt.KeyPerformance;
+        txtWorkTarget.Text = mt.Target;
+        txtRemark.Text = mt.Remark;
+
+
+
+
+        btnsubmit.Text = "Update";
+        BtnADDrole.Visible = false;
+
+    }
+
+    protected void GridView1_DataBound(object sender, EventArgs e)
+    {
+
+        for (int rowIndex = GridView1.Rows.Count - 2; rowIndex >= 0; rowIndex--)
+        {
+            GridViewRow gvrow = GridView1.Rows[rowIndex];
+            GridViewRow gvprivous = GridView1.Rows[rowIndex + 1];
+
+            for (int cellCount = 0; cellCount < gvrow.Cells.Count; cellCount++)
+            {
+                if (cellCount == 1)
+                {
+                    if (gvrow.Cells[cellCount].Text == gvprivous.Cells[cellCount].Text)
+                    {
+                        if (gvprivous.Cells[cellCount].RowSpan < 2)
+                        {
+                            gvrow.Cells[cellCount].RowSpan = 2;
+                        }
+
+                        else
+                        {
+                            gvrow.Cells[cellCount].RowSpan = gvprivous.Cells[cellCount].RowSpan + 1;
+                        }
+                        gvprivous.Cells[cellCount].Visible = false;
+                    }
+                }
+
+            }
+        }
+
+    }
+    protected void GridView2_DataBound(object sender, EventArgs e)
+    {
+
+        for (int rowIndex = GridView2.Rows.Count - 2; rowIndex >= 0; rowIndex--)
+        {
+            GridViewRow gvrow = GridView2.Rows[rowIndex];
+            GridViewRow gvprivous = GridView2.Rows[rowIndex + 1];
+
+            for (int cellCount = 0; cellCount < gvrow.Cells.Count; cellCount++)
+            {
+                if (cellCount == 0)
+                {
+                    if (gvrow.Cells[cellCount].Text == gvprivous.Cells[cellCount].Text)
+                    {
+                        if (gvprivous.Cells[cellCount].RowSpan < 2)
+                        {
+                            gvrow.Cells[cellCount].RowSpan = 2;
+                        }
+
+                        else
+                        {
+                            gvrow.Cells[cellCount].RowSpan = gvprivous.Cells[cellCount].RowSpan + 1;
+                        }
+                        gvprivous.Cells[cellCount].Visible = false;
+                    }
+                }
+
+            }
+        }
+
+    }
+
+    protected void GridView1_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        GridView1.PageIndex = e.NewPageIndex;
+        BindAllEmp1();
+        GridView1.DataBind();
+    }
+    protected void BtnADDrole_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void btncancel_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 10;
+        BindAllEmp1();
+
+
+    }
+    protected void btnadd_Click(object sender, EventArgs e)
+    {
+
+        Response.Redirect("KPIResposiblityMaster.aspx?Flag=0");
+    }
+    protected void lnkSelfDevelpPlan_Click(object sender, EventArgs e)
+    {
+        List<string> empid6 = (from dd in db.tbl_ProfessinalTBs select dd.Empid.ToString()).ToList();
+
+        String empidd1 = Convert.ToString(Session["UserId"]);
+        if (empid6.Contains(empidd1))
+        {
+            MultiView1.ActiveViewIndex = 10;
+            BindAllSelfDev(); ;
+        }
+        else
+        {
+            MultiView1.ActiveViewIndex = 11;
+        }
+
+
+        //  MultiView1.ActiveViewIndex = 10;
+        // Response.Redirect("SelfDevelopmentPlan.aspx?Flag1=0");
+    }
+
+    protected void btnprint_Click(object sender, EventArgs e)
+    {
+
+        //  int Empid123 =  Convert.ToInt32(Lnk.CommandArgument);
+        int Empid123 = Convert.ToInt32(Session["EmpIDD1"]);
+
+        // For Employee  Details 
+
+
+        dt1 = g.ReturnData("SELECT (CASE  WHEN [t1].[Solitude] = 0 THEN CONVERT(NVarChar(156),(((('Mr ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname])  WHEN [t1].[Solitude] = 1 THEN CONVERT(NVarChar(156),(((('Ms ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname]) WHEN [t1].[Solitude] = 2 THEN (((('Mrs ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname] ELSE (((('Dr. ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname] END) AS [Name], [t2].[CompanyName], [t3].[DeptName], [t4].[DesigName],  '100'+''+CONVERT(varchar, [t1].[EmployeeId] )as EmployeeId FROM  [dbo].[EmployeeTB] AS [t1]   LEFT OUTER JOIN [dbo].[CompanyInfoTB] AS [t2] ON [t2].[CompanyId] = [t1].[CompanyId] LEFT OUTER JOIN [dbo].[MasterDeptTB] AS [t3] ON [t3].[DeptID] = [t1].[DeptId] LEFT OUTER JOIN [dbo].[MasterDesgTB] AS [t4] ON [t4].[DesigID] = [t1].[DesgId] WHERE [t1].[EmployeeId] = '" + Convert.ToInt32(Empid123) + "'");
+
+        //   dt1 = g.ReturnData("SELECT (CASE  WHEN [t1].[Solitude] = 0 THEN CONVERT(NVarChar(156),(((('Mr' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname])  WHEN [t1].[Solitude] = 1 THEN CONVERT(NVarChar(156),(((('Ms' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname]) WHEN [t1].[Solitude] = 2 THEN (((('Mrs' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname] ELSE (((('Dr.' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname] END) AS [Name], [t2].[CompanyName], [t3].[DeptName], [t4].[DesigName], [t0].[Reveiw],'100'+''+CONVERT(varchar, [t1].[EmployeeId] )as EmployeeId FROM [dbo].[SWOTDetailsTB] AS [t0] LEFT OUTER JOIN [dbo].[EmployeeTB] AS [t1] ON [t1].[EmployeeId] = [t0].[EmpID]  LEFT OUTER JOIN [dbo].[CompanyInfoTB] AS [t2] ON [t2].[CompanyId] = [t1].[CompanyId] LEFT OUTER JOIN [dbo].[MasterDeptTB] AS [t3] ON [t3].[DeptID] = [t1].[DeptId] LEFT OUTER JOIN [dbo].[MasterDesgTB] AS [t4] ON [t4].[DesigID] = [t1].[DesgId] WHERE [t1].[EmployeeId] = '" + Convert.ToInt32(Empid123) + "'");
+        Session["dt1"] = dt1;
+
+
+        // For Professinal Details 
+
+        dtProfess = g.ReturnData("select SelfDevelopmentNewTB.SelfDevId,SelfDevelopmentNewTB.SelfdevepType, ProfessinalDescr,ProfessTimeFrame,ProfessValues from tbl_ProfessinalTB  left outer join SelfDevelopmentNewTB on tbl_ProfessinalTB.SelfDevId= SelfDevelopmentNewTB.SelfDevId where tbl_ProfessinalTB.Empid='" + Empid123 + "'");
+
+        //   dtProfess = g.ReturnData("SELECT  [ProfessinalDescr],[ProfessTimeFrame],[ProfessValues]  FROM [tbl_ProfessinalTB]  where Empid='" + Empid123 + "'");
+        Session["dtProfess"] = dtProfess;
+
+        // For Family Details 
+
+        // dtFamily = g.ReturnData("SELECT [FamilyDescription],[FamilyTimeFrame],[FamilyValues]  FROM [tbl_FamilySelfDevTB]  where EmpId='" + Empid123 + "'");
+
+        // Session["dtFamily"] = dtFamily;
+
+        //// For Health Details 
+
+
+        //dtHealth = g.ReturnData("SELECT [HealthDesc],[HealthTimeFrame] ,[HealthValues] FROM [tbl_HealthSelfDevTB] where EmpID='" + Empid123 + "'");
+        // Session["dtHealth"] = dtHealth;
+
+
+
+        //// For Financial Details 
+
+        // dtFinancial = g.ReturnData("SELECT [FinancialDescrip],[FinancialTimeFrame],[FinancialValues]  FROM [tblFinancialSelfDevTB] where EmpID='" + Empid123 + "'");
+        // Session["dtFinancial"] = dtFinancial;
+
+
+        // // For Spiritual Details 
+        // dtSpiritual = g.ReturnData("SELECT [SpiritualDesc],[SpiritualTimeFrame],[SpiritualValues] FROM [tbl_SpiritualSelfDevTB] where EmpID='" + Empid123 + "'");
+        // Session["dtSpiritual"] = dtSpiritual;
+
+
+
+        // // For Leisure Details 
+        // dtLeisure = g.ReturnData("SELECT LeisureDescrip,[LeisureTimeFrame],[LeisureValues]  FROM [tbl_LeisureSelfDevTB] where EmpID='" + Empid123 + "'");
+        // Session["dtLeisure"] = dtLeisure;
+
+
+
+
+
+        string ss = "window.open('SelfDevelopmentViewer.aspx?Type=All','mywindow','width=1000,height=700,left=200,top=1,screenX=100,screenY=100,toolbar=no,location=no,directories=no,status=yes,menubar=no,scrollbars=yes,copyhistory=yes,resizable=no')";
+        string script = "<script language='javascript'>" + ss + "</script>";
+        ScriptManager.RegisterStartupScript(this, this.GetType(), "PopUpWindow", script, false);
+
+        modNewTax.Show();
+    }
+
+    protected void imgbtnview_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton lnl = (ImageButton)sender;
+        string EMpid2 = lnl.CommandArgument;
+
+        Session["EmpIDD1"] = lnl.CommandArgument;
+
+
+
+        string IDHint = "100";
+        var data = from dt in db.tblSelfDevelopementPlanTBs
+                   join e5 in db.EmployeeTBs on dt.EmpId equals e5.EmployeeId
+
+                   where dt.EmpId == Convert.ToInt32(EMpid2)
+                   select new
+                   {
+                       Name = e5.Solitude == 0 ? "Mr" + " " + e5.FName + " " + e5.MName + " " + e5.Lname : e5.Solitude == 1 ? "Ms" + " " + e5.FName + " " + e5.MName + " " + e5.Lname : e5.Solitude == 2 ? "Mrs" + " " + e5.FName + " " + e5.MName + " " + e5.Lname : "Dr." + " " + e5.FName + " " + e5.MName + " " + e5.Lname,
+                       //e5.CompanyInfoTB.CompanyName,
+                       //e5.MasterDeptTB.DeptName,
+                       //e5.MasterDesgTB.DesigName,
+                       //  e5.Reveiw,
+                       e5.EmployeeId,
+                   };
+        foreach (var item in data)
+        {
+            lblemp.Text = item.Name;
+            Label3.Text = IDHint + "" + item.EmployeeId;
+            //lblcomp.Text = item.CompanyName;
+            //lbldep.Text = item.DeptName;
+            //lbldisig.Text = item.DesigName;
+            //  lblrevRemark.Text = item.Reveiw;
+        }
+
+        var dataProfess1 = from dt in db.tbl_ProfessinalTBs
+                           join dg in db.SelfDevelopmentNewTBs on dt.SelfDevId equals dg.SelfDevId
+                           where dt.Empid == Convert.ToInt32(EMpid2)
+                           select new
+                           {
+
+                               dg.SelfDevId,
+                               dg.SelfdevepType,
+                               dt.ProfessinalDescr,
+                               dt.ProfessTimeFrame,
+                               dt.ProfessValues
+                           };
+        if (dataProfess1.Count() > 0)
+        {
+            GridView2.DataSource = dataProfess1;
+            GridView2.DataBind();
+        }
+        else
+        {
+            GridView2.DataSource = null;
+            GridView2.DataBind();
+        }
+
+
+
+        modNewTax.Show();
+
+        //       select SelfDevelopmentNewTB.SelfDevId,SelfDevelopmentNewTB.SelfdevepType, ProfessinalDescr,ProfessTimeFrame,ProfessValues
+        //from tbl_ProfessinalTB  left outer join SelfDevelopmentNewTB on tbl_ProfessinalTB.SelfDevId= SelfDevelopmentNewTB.SelfDevId where tbl_ProfessinalTB.Empid='" + EmployeeId + "'");
+
+
+
+
+        // For Professinal Details
+        //  BindViewData();
+
+    }
+    private void BindSelfDev()
+    {
+        var SelfDevdata = from dt in db.SelfDevelopmentNewTBs
+                          select new
+                          {
+                              dt.SelfDevId,
+                              dt.SelfdevepType
+                          };
+        if (SelfDevdata.Count() > 0)
+        {
+            ddlSelfDevelopment.DataSource = SelfDevdata;
+            ddlSelfDevelopment.DataTextField = "SelfdevepType";
+            ddlSelfDevelopment.DataValueField = "SelfDevId";
+            ddlSelfDevelopment.DataBind();
+
+            ddlSelfDevelopment.Items.Insert(0, "--Select--");
+
+        }
+    }
+
+    protected void Edit_Click(object sender, EventArgs e)
+    {
+
+        MultiView1.ActiveViewIndex = 11;
+        LinkButton lnk = (LinkButton)sender;
+        string EmployeeId = lnk.CommandArgument;
+        Session["EmpIDD"] = EmployeeId;
+
+        var Profess = (from m in db.tbl_ProfessinalTBs
+                       join g in db.SelfDevelopmentNewTBs
+                       on m.SelfDevId equals g.SelfDevId
+                       where m.Empid == Convert.ToInt32(EmployeeId)
+                       select new
+                       {
+                           m.ProfessinalDescr,
+                           m.ProfessTimeFrame,
+                           m.ProfessValues,
+                           m.SelfDevId,
+                           g.SelfdevepType
+
+                       }).ToList();
+
+        grd_Professonal.DataSource = Profess;
+        grd_Professonal.DataBind();
+
+        foreach (var item in Profess)
+        {
+
+            if (ViewState["dtt"] == null)
+            {
+                dtt = new DataTable();
+
+                DataColumn SelfDevId = dtt.Columns.Add("SelfDevId");
+                DataColumn SelfdevepType = dtt.Columns.Add("SelfdevepType");
+
+                DataColumn ProfessinalDescr = dtt.Columns.Add("ProfessinalDescr");
+                DataColumn ProfessTimeFrame = dtt.Columns.Add("ProfessTimeFrame");
+                DataColumn ProfessValues = dtt.Columns.Add("ProfessValues");
+
+            }
+            else
+            {
+                dtt = (DataTable)ViewState["dtt"];
+            }
+
+            // DataTable ds1Profess = g.ReturnData(" select SelfDevId,SelfdevepType, ProfessinalDescr,ProfessTimeFrame,ProfessValues from tbl_ProfessinalTB where Empid='" + EmployeeId + "'");
+
+            DataTable ds1Profess = g.ReturnData(" select SelfDevelopmentNewTB.SelfDevId,SelfDevelopmentNewTB.SelfdevepType, ProfessinalDescr,ProfessTimeFrame,ProfessValues from tbl_ProfessinalTB  left outer join SelfDevelopmentNewTB on tbl_ProfessinalTB.SelfDevId= SelfDevelopmentNewTB.SelfDevId where tbl_ProfessinalTB.Empid='" + EmployeeId + "'");
+
+            DataRow dr = ds1Profess.NewRow();
+            dr[0] = Convert.ToInt32(ds1Profess.Rows[0]["SelfDevId"]);
+            dr[1] = ds1Profess.Rows[0]["SelfdevepType"].ToString();
+            dr[2] = ds1Profess.Rows[0]["ProfessinalDescr"].ToString();
+            dr[3] = ds1Profess.Rows[0]["ProfessTimeFrame"].ToString();
+            dr[4] = ds1Profess.Rows[0]["ProfessValues"].ToString();
+
+
+            //ds.Rows.Add(dr);
+            ViewState["dtt"] = ds1Profess;
+        }
+
+
+        btnselfdevFinalSave.Text = "Update";
+
+
+
+
+    }
+    protected void GridView1_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+    }
+    protected void BtnSelfDevelSave_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void Button3_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void BtnADDProfessinal_Click(object sender, EventArgs e)
+    {
+        #region Professinal Details
+
+        if (ViewState["dtt"] != null)
+        {
+            //BindSelfDev();
+            dtt = (DataTable)ViewState["dtt"];
+
+            DataRow dr = dtt.NewRow();
+
+            dr[0] = ddlSelfDevelopment.SelectedValue;
+            dr[1] = ddlSelfDevelopment.SelectedItem.Text;
+            dr[2] = txtProfessinalDescr.Text;
+            dr[3] = txtProfessTimeframe.Text;
+            dr[4] = txtProfessValues.Text;
+
+
+            dtt.Rows.Add(dr);
+            ViewState["dtt"] = dtt;
+
+
+        }
+        else
+        {
+            dtt = new DataTable();
+
+            DataColumn SelfDevId = dtt.Columns.Add("SelfDevId");
+            DataColumn SelfdevepType = dtt.Columns.Add("SelfdevepType");
+            DataColumn ProfessinalDescr = dtt.Columns.Add("ProfessinalDescr");
+            DataColumn ProfessTimeFrame = dtt.Columns.Add("ProfessTimeFrame");
+            DataColumn ProfessValues = dtt.Columns.Add("ProfessValues");
+
+            DataRow dr = dtt.NewRow();
+            dr[0] = ddlSelfDevelopment.SelectedValue;
+            dr[1] = ddlSelfDevelopment.SelectedItem.Text;
+            dr[2] = txtProfessinalDescr.Text;
+            dr[3] = txtProfessTimeframe.Text;
+            dr[4] = txtProfessValues.Text;
+
+
+            dtt.Rows.Add(dr);
+            ViewState["dtt"] = dtt;
+
+        }
+
+        grd_Professonal.DataSource = dtt;
+        grd_Professonal.DataBind();
+        CLEAR();
+        MultiView1.ActiveViewIndex = 11;
+        #endregion
+    }
+    protected void imgedit_Click(object sender, ImageClickEventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 11;
+
+        ImageButton imgedit = (ImageButton)sender;
+        string ItemId = imgedit.CommandArgument;
+        dtt = (DataTable)ViewState["dtt"];
+
+
+        foreach (DataRow d in dtt.Rows)
+        {
+            if (d[2].ToString() == imgedit.CommandArgument)
+            {
+
+                //dtt.Columns.Add(new DataColumn("SelfDevId", typeof(string)));
+                //dtt.Columns.Add(new DataColumn("SelfdevepType", typeof(string)));
+
+                ddlSelfDevelopment.SelectedValue = d["SelfDevId"].ToString();
+                //txtProfessTimeframe.Text = d["SelfdevepType"].ToString();
+
+                txtProfessinalDescr.Text = d["ProfessinalDescr"].ToString();
+                txtProfessTimeframe.Text = d["ProfessTimeFrame"].ToString();
+                txtProfessValues.Text = d["ProfessValues"].ToString();
+
+
+                d.Delete();
+                dtt.AcceptChanges();
+
+                break;
+            }
+        }
+
+        grd_Professonal.DataSource = dtt;
+        grd_Professonal.DataBind();
+        MultiView1.ActiveViewIndex = 11;
+    }
+
+    protected void grd_Professonal_DataBound(object sender, EventArgs e)
+    {
+        for (int rowIndex = grd_Professonal.Rows.Count - 2; rowIndex >= 0; rowIndex--)
+        {
+            GridViewRow gvrow = grd_Professonal.Rows[rowIndex];
+            GridViewRow gvprivous = grd_Professonal.Rows[rowIndex + 1];
+
+            for (int cellCount = 0; cellCount < gvrow.Cells.Count; cellCount++)
+            {
+                if (cellCount == 0)
+                {
+                    if (gvrow.Cells[cellCount].Text == gvprivous.Cells[cellCount].Text)
+                    {
+                        if (gvprivous.Cells[cellCount].RowSpan < 2)
+                        {
+                            gvrow.Cells[cellCount].RowSpan = 2;
+                        }
+
+                        else
+                        {
+                            gvrow.Cells[cellCount].RowSpan = gvprivous.Cells[cellCount].RowSpan + 1;
+                        }
+                        gvprivous.Cells[cellCount].Visible = false;
+                    }
+                }
+
+            }
+        }
+    }
+
+
+    protected void imgdelete_Click(object sender, ImageClickEventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 11;
+        ImageButton imgdelete = (ImageButton)sender;
+        string ServiceId = imgdelete.CommandArgument;
+        dtt = (DataTable)ViewState["dtt"];
+
+        foreach (DataRow d in dtt.Rows)
+        {
+            if (d[2].ToString() == imgdelete.CommandArgument)
+            {
+
+                d.Delete();
+                dtt.AcceptChanges();
+                break;
+            }
+        }
+
+        grd_Professonal.DataSource = dtt;
+        grd_Professonal.DataBind();
+    }
+    private void CLEAR()
+    {
+        txtProfessinalDescr.Text = "";
+        txtProfessTimeframe.Text = "";
+        txtProfessValues.Text = "";
+
+    }
+
+    private void BindViewData()
+    {
+        int tt = Convert.ToInt32(Session["EmpIDD1"]);
+
+        var dataProfess1 = from dt in db.tbl_ProfessinalTBs
+                           join dg in db.SelfDevelopmentNewTBs on dt.SelfDevId equals dg.SelfDevId
+                           where dt.Empid == Convert.ToInt32(tt)
+                           select new
+                           {
+
+                               dg.SelfDevId,
+                               dg.SelfdevepType,
+                               dt.ProfessinalDescr,
+                               dt.ProfessTimeFrame,
+                               dt.ProfessValues
+                           };
+        if (dataProfess1.Count() > 0)
+        {
+            GridView2.DataSource = dataProfess1;
+            GridView2.DataBind();
+        }
+        else
+        {
+            GridView2.DataSource = null;
+            GridView2.DataBind();
+        }
+
+    }
+
+    protected void BtnSelfDevepPlanAdd_Click(object sender, EventArgs e)
+    {
+        ddlSelfDevelopment.SelectedIndex = -1;
+        txtProfessinalDescr.Text = "";
+        txtProfessTimeframe.Text = "";
+        txtProfessValues.Text = "";
+
+
+        MultiView1.ActiveViewIndex = 11;
+        BtnADDProfessinal.Visible = true;
+    }
+    protected void BtnSelfDevepPlanPrint_Click(object sender, EventArgs e)
+    {
+        //  int Empid123 =  Convert.ToInt32(Lnk.CommandArgument);
+        // int Empid123 = Convert.ToInt32(Session["EmpIDD1"]);
+
+
+        int Empid123 = Convert.ToInt32(Session["UserId"]);
+        // For Employee  Details 
+
+
+        dt1 = g.ReturnData("SELECT (CASE  WHEN [t1].[Solitude] = 0 THEN CONVERT(NVarChar(156),(((('Mr ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname])  WHEN [t1].[Solitude] = 1 THEN CONVERT(NVarChar(156),(((('Ms ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname]) WHEN [t1].[Solitude] = 2 THEN (((('Mrs ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname] ELSE (((('Dr. ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname] END) AS [Name], [t2].[CompanyName], [t3].[DeptName], [t4].[DesigName],  '100'+''+CONVERT(varchar, [t1].[EmployeeId] )as EmployeeId FROM  [dbo].[EmployeeTB] AS [t1]   LEFT OUTER JOIN [dbo].[CompanyInfoTB] AS [t2] ON [t2].[CompanyId] = [t1].[CompanyId] LEFT OUTER JOIN [dbo].[MasterDeptTB] AS [t3] ON [t3].[DeptID] = [t1].[DeptId] LEFT OUTER JOIN [dbo].[MasterDesgTB] AS [t4] ON [t4].[DesigID] = [t1].[DesgId] WHERE [t1].[EmployeeId] = '" + Convert.ToInt32(Empid123) + "'");
+
+        Session["dt1"] = dt1;
+
+
+        // For Professinal Details 
+
+        dtProfess = g.ReturnData("select SelfDevelopmentNewTB.SelfDevId,SelfDevelopmentNewTB.SelfdevepType, ProfessinalDescr,ProfessTimeFrame,ProfessValues from tbl_ProfessinalTB  left outer join SelfDevelopmentNewTB on tbl_ProfessinalTB.SelfDevId= SelfDevelopmentNewTB.SelfDevId where tbl_ProfessinalTB.Empid='" + Empid123 + "'");
+
+        Session["dtProfess"] = dtProfess;
+
+
+        string ss = "window.open('SelfDevelopmentViewer.aspx?Type=All','mywindow','width=1000,height=700,left=200,top=1,screenX=100,screenY=100,toolbar=no,location=no,directories=no,status=yes,menubar=no,scrollbars=yes,copyhistory=yes,resizable=no')";
+        string script = "<script language='javascript'>" + ss + "</script>";
+        ScriptManager.RegisterStartupScript(this, this.GetType(), "PopUpWindow", script, false);
+
+    }
+
+
+    protected void btnselfdevFinalSave_Click(object sender, EventArgs e)
+    {
+
+
+        if (btnselfdevFinalSave.Text == "Save")
+        {
+            if (ViewState["dtt"] == null)
+            {
+                g.ShowMessage(this.Page, "Please Enter Self Development Plans");
+            }
+            else
+            {
+                #region Insert Details
+
+                // For Professinal Details 
+
+                dtt = ViewState["dtt"] as DataTable;
+                if (ViewState["dtt"] != null)
+                {
+
+                    for (int i = 0; i < dtt.Rows.Count; i++)
+                    {
+
+                        tbl_ProfessinalTB tb = new tbl_ProfessinalTB();
+
+                        tb.SelfDevId = Convert.ToInt32(dtt.Rows[i][0].ToString());
+                        tb.ProfessinalDescr = (dtt.Rows[i][2].ToString());
+                        tb.ProfessTimeFrame = (dtt.Rows[i][3].ToString());
+                        tb.ProfessValues = (dtt.Rows[i][4].ToString());
+
+
+                        tb.Empid = Convert.ToInt32(Session["UserId"]);
+                        db.tbl_ProfessinalTBs.InsertOnSubmit(tb);
+                        db.SubmitChanges();
+
+
+                    }
+
+                }
+                else
+                {
+
+                }
+
+
+
+                #endregion
+                MultiView1.ActiveViewIndex = 10;
+            }
+        }
+        else
+        {
+            #region Insert + Update Details
+
+            // For Professinal Details 
+
+
+            // For Professinal Details 
+            int EMM1 = Convert.ToInt32(Session["EmpIDD"]);
+            DataSet dsprofess = g.ReturnData1("delete from tbl_ProfessinalTB where Empid='" + EMM1 + "'");
+
+            int ProfId1 = Convert.ToInt32(Session["ProfessId"]);
+
+            tbl_ProfessinalTB mt = db.tbl_ProfessinalTBs.Where(s => s.ProfessinalId == Convert.ToInt32(ProfId1)).First();
+            (mt.SelfDevId) = Convert.ToInt32(ddlSelfDevelopment.SelectedValue);
+            mt.ProfessinalDescr = txtProfessinalDescr.Text;
+            mt.ProfessTimeFrame = txtProfessTimeframe.Text;
+            txtProfessValues.Text = mt.ProfessValues;
+            btnselfdevFinalSave.Text = "Save";
+            db.SubmitChanges();
+            MultiView1.ActiveViewIndex = 10;
+            BindAllSelfDevNew();
+
+
+
+
+            //dtt = ViewState["dtt"] as DataTable;
+            //if (ViewState["dtt"] != null)
+            //{
+
+            //    for (int i = 0; i < dtt.Rows.Count; i++)
+            //    {
+
+            //        tbl_ProfessinalTB tb = new tbl_ProfessinalTB();
+            //        tb.SelfDevId = Convert.ToInt32(dtt.Rows[i][0].ToString());
+            //        tb.ProfessinalDescr = (dtt.Rows[i][2].ToString());
+            //        tb.ProfessTimeFrame = (dtt.Rows[i][3].ToString());
+            //        tb.ProfessValues = (dtt.Rows[i][4].ToString());
+
+
+            //        tb.Empid = Convert.ToInt32(Session["UserId"]);
+            //        db.tbl_ProfessinalTBs.InsertOnSubmit(tb);
+            //        db.SubmitChanges();
+            //        BindViewData();
+            //        btnselfdevFinalSave.Text = "Save";
+            //    }
+
+            //}
+            //else
+            //{
+
+            //}  
+            MultiView1.ActiveViewIndex = 10;
+
+            #endregion
+            MultiView1.ActiveViewIndex = 10;
+            //  MultiView1.ActiveViewIndex = 11;
+
+        }
+        //  Response.Redirect("EmployeeDetails.aspx");
+        BindAllSelfDevNew();
+        BindAllSelfDev();
+    }
+    private void bindgrid()
+    {
+        string empid = Session["UserId"].ToString();
+
+        bool Status = g.CheckAdmin(Convert.ToInt32(Session["UserId"]));
+
+        if (Status == true)
+        {
+            var data = from d in db.SWOTDetailsTBs
+                       select new
+                       {
+                           Name = d.EmployeeTB.Solitude == 0 ? "Mr" + " " + d.EmployeeTB.FName + " " + d.EmployeeTB.MName + " " + d.EmployeeTB.Lname : d.EmployeeTB.Solitude == 1 ? "Ms" + " " + d.EmployeeTB.FName + " " + d.EmployeeTB.MName + " " + d.EmployeeTB.Lname : d.EmployeeTB.Solitude == 2 ? "Mrs" + " " + d.EmployeeTB.FName + " " + d.EmployeeTB.MName + " " + d.EmployeeTB.Lname : "Dr." + " " + d.EmployeeTB.FName + " " + d.EmployeeTB.MName + " " + d.EmployeeTB.Lname,
+                           //d.EmployeeTB.CompanyInfoTB.CompanyName,
+                           //d.EmployeeTB.MasterDeptTB.DeptName,
+                           //d.EmployeeTB.MasterDesgTB.DesigName,
+                           d.EmployeeTB.EmailId,
+                           d.SWOTDetailsID
+                       };
+            if (data.Count() > 0)
+            {
+                grd_Dept.DataSource = data;
+                grd_Dept.DataBind();
+            }
+            else
+            {
+                grd_Dept.DataSource = null;
+                grd_Dept.DataBind();
+            }
+            lblcnt.Text = data.Count().ToString();
+        }
+        else
+        {
+            var data = from d in db.SWOTDetailsTBs
+                       where d.EmpID == Convert.ToInt32(Session["UserId"])
+                       select new
+                       {
+                           Name = d.EmployeeTB.Solitude == 0 ? "Mr" + " " + d.EmployeeTB.FName + " " + d.EmployeeTB.MName + " " + d.EmployeeTB.Lname : d.EmployeeTB.Solitude == 1 ? "Ms" + " " + d.EmployeeTB.FName + " " + d.EmployeeTB.MName + " " + d.EmployeeTB.Lname : d.EmployeeTB.Solitude == 2 ? "Mrs" + " " + d.EmployeeTB.FName + " " + d.EmployeeTB.MName + " " + d.EmployeeTB.Lname : "Dr." + " " + d.EmployeeTB.FName + " " + d.EmployeeTB.MName + " " + d.EmployeeTB.Lname,
+                           //d.EmployeeTB.CompanyInfoTB.CompanyName,
+                           //d.EmployeeTB.MasterDeptTB.DeptName,
+                           //d.EmployeeTB.MasterDesgTB.DesigName,
+                           d.EmployeeTB.EmailId,
+                           d.SWOTDetailsID
+                       };
+            if (data.Count() > 0)
+            {
+                grd_Dept.DataSource = data;
+                grd_Dept.DataBind();
+            }
+            else
+            {
+                grd_Dept.DataSource = null;
+                grd_Dept.DataBind();
+            }
+            lblcnt.Text = data.Count().ToString();
+        }
+    }
+
+    protected void btnAddswotSTR_Click(object sender, EventArgs e)
+    {
+        int cnt = 0;
+        if (ViewState["dtstr"] != null)
+        {
+            //  dtSWOTType = (DataTable)ViewState["dtSWOTType"];
+            dtstr = (DataTable)ViewState["dtstr"];
+        }
+        else
+        {
+
+            DataColumn dtSWOTType = dtstr.Columns.Add("SWOTType");
+            DataColumn Ans = dtstr.Columns.Add("Answer");
+
+        }
+
+        DataRow dr = dtstr.NewRow();
+
+
+        //dr[0] = ddlqueststr.SelectedValue;
+        //dr[1] = ddlqueststr.SelectedItem.Text;
+        dr[0] = ddlqueststr.SelectedValue;
+        dr[1] = txtAnswerstr.Text;
+
+
+
+        if (dtstr.Rows.Count > 0)
+        {
+            for (int f = 0; f < dtstr.Rows.Count; f++)
+            {
+
+
+                string u3 = dtstr.Rows[f][0].ToString();
+
+            }
+            //if (cnt > 0)
+            //{
+            //    g.ShowMessage(this.Page, "Already Exist");
+
+            //}
+            //else
+            //{
+            dtstr.Rows.Add(dr);
+            txtAnswerstr.Text = "";
+            //ddlqueststr.SelectedIndex = 0;
+            //}
+        }
+        else
+        {
+            dtstr.Rows.Add(dr);
+            txtAnswerstr.Text = "";
+            //ddlqueststr.SelectedIndex = 0;
+        }
+
+        ViewState["dtstr"] = dtstr;
+
+        grdswotStr.DataSource = dtstr;
+        grdswotStr.DataBind();
+
+    }
+
+
+
+    protected void grd_Dept_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grd_Dept.PageIndex = e.NewPageIndex;
+        bindgrid();
+        grd_Dept.DataBind();
+    }
+
+    protected void imgeditstr_Click(object sender, ImageClickEventArgs e)
+    {
+        btnAddswotSTR.Visible = false;
+        ImageButton imgedit = (ImageButton)sender;
+        string ItemId = imgedit.CommandArgument;
+        dtstr = (DataTable)ViewState["dtstr"];
+
+
+        foreach (DataRow d in dtstr.Rows)
+        {
+            if (d[0].ToString() == imgedit.CommandArgument)
+            {
+
+                //ddlqueststr.SelectedValue = d["id"].ToString();
+
+                txtAnswerstr.Text = d["Answer"].ToString();
+
+                d.Delete();
+                dtstr.AcceptChanges();
+                break;
+            }
+        }
+
+        grdswotStr.DataSource = dtstr;
+        grdswotStr.DataBind();
+    }
+    protected void grdswotStr_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        for (int rowIndex = grdswotStr.Rows.Count - 2; rowIndex >= 0; rowIndex--)
+        {
+            GridViewRow gvrow = grdswotStr.Rows[rowIndex];
+            GridViewRow gvprivous = grdswotStr.Rows[rowIndex + 1];
+
+            for (int cellCount = 0; cellCount < gvrow.Cells.Count; cellCount++)
+            {
+                if (cellCount == 1)
+                {
+                    if (gvrow.Cells[cellCount].Text == gvprivous.Cells[cellCount].Text)
+                    {
+                        if (gvprivous.Cells[cellCount].RowSpan < 2)
+                        {
+                            gvrow.Cells[cellCount].RowSpan = 2;
+                        }
+
+                        else
+                        {
+                            gvrow.Cells[cellCount].RowSpan = gvprivous.Cells[cellCount].RowSpan + 1;
+                        }
+                        gvprivous.Cells[cellCount].Visible = false;
+                    }
+                }
+
+            }
+        }
+    }
+
+
+    protected void imgdeletestr_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton imgdelete = (ImageButton)sender;
+        string ServiceId = imgdelete.CommandArgument;
+        dtstr = (DataTable)ViewState["dtstr"];
+
+        foreach (DataRow d in dtstr.Rows)
+        {
+            if (d[0].ToString() == imgdelete.CommandArgument)
+            {
+
+                d.Delete();
+                dtstr.AcceptChanges();
+                break;
+            }
+        }
+
+        grdswotStr.DataSource = dtstr;
+        grdswotStr.DataBind();
+
+    }
+
+    protected void ButtonPrintSWOT_Click(object sender, EventArgs e)
+    {
+        dt1 = g.ReturnData("SELECT (CASE  WHEN [t1].[Solitude] = 0 THEN CONVERT(NVarChar(156),(((('Mr ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname])  WHEN [t1].[Solitude] = 1 THEN CONVERT(NVarChar(156),(((('Ms ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname]) WHEN [t1].[Solitude] = 2 THEN (((('Mrs ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname] ELSE (((('Dr. ' + [t1].[FName]) + ' ') + [t1].[MName]) + ' ') + [t1].[Lname] END) AS [Name], [t2].[CompanyName], [t3].[DeptName], [t4].[DesigName], [t0].[Reveiw],'100'+''+CONVERT(varchar, [t1].[EmployeeId] )as EmployeeId FROM [dbo].[SWOTDetailsTB] AS [t0] LEFT OUTER JOIN [dbo].[EmployeeTB] AS [t1] ON [t1].[EmployeeId] = [t0].[EmpID]  LEFT OUTER JOIN [dbo].[CompanyInfoTB] AS [t2] ON [t2].[CompanyId] = [t1].[CompanyId] LEFT OUTER JOIN [dbo].[MasterDeptTB] AS [t3] ON [t3].[DeptID] = [t1].[DeptId] LEFT OUTER JOIN [dbo].[MasterDesgTB] AS [t4] ON [t4].[DesigID] = [t1].[DesgId] WHERE [t0].[SWOTDetailsID] = '" + Convert.ToInt32(lblview.Text) + "'");
+        Session["dt1"] = dt1;
+
+
+        dt2 = g.ReturnData("SELECT [t1].[Question], [t0].[Answer] FROM [dbo].[SWOTStrTB] AS [t0] LEFT OUTER JOIN [dbo].[SWOTMasterTB] AS [t1] ON [t1].[ID] = [t0].[SWOTID] WHERE [t0].[SWOTDetailsID] = '" + Convert.ToInt32(lblview.Text) + "'");
+        Session["dt2"] = dt2;
+
+        dt3 = g.ReturnData("SELECT [t1].[Question], [t0].[Answer] FROM [dbo].[SWOTWeekTB] AS [t0] LEFT OUTER JOIN [dbo].[SWOTMasterTB] AS [t1] ON [t1].[ID] = [t0].[SWOTID] WHERE [t0].[SWOTDetailsId] = '" + Convert.ToInt32(lblview.Text) + "'");
+        Session["dt3"] = dt3;
+
+        dt4 = g.ReturnData("SELECT [t1].[Question], [t0].[Answer] FROM [dbo].[SWOTOperTB] AS [t0] INNER JOIN [dbo].[SWOTMasterTB] AS [t1] ON [t1].[ID] = [t0].[SWOTId] WHERE [t0].[SWOTDetailsId] = '" + Convert.ToInt32(lblview.Text) + "'");
+        Session["dt4"] = dt4;
+
+        dt5 = g.ReturnData("SELECT [t1].[Question], [t0].[Answer] FROM [dbo].[SWOTThreatTB] AS [t0] LEFT OUTER JOIN [dbo].[SWOTMasterTB] AS [t1] ON [t1].[ID] = [t0].[SWOTID] WHERE [t0].[SWOTDetailsID] = '" + Convert.ToInt32(lblview.Text) + "'");
+        Session["dt5"] = dt5;
+        // Session["id"] = lbledit.Text;
+
+
+        string ss = "window.open('SWOTViewer.aspx?Type=All','mywindow','width=1000,height=700,left=200,top=1,screenX=100,screenY=100,toolbar=no,location=no,directories=no,status=yes,menubar=no,scrollbars=yes,copyhistory=yes,resizable=no')";
+        string script = "<script language='javascript'>" + ss + "</script>";
+        ScriptManager.RegisterStartupScript(this, this.GetType(), "PopUpWindow", script, false);
+    }
+
+
+    protected void btnaddweek_Click(object sender, EventArgs e)
+    {
+        int cnt = 0;
+        if (ViewState["dtweek"] != null)
+        {
+            dtweek = (DataTable)ViewState["dtweek"];
+        }
+        else
+        {
+
+
+            DataColumn Ans = dtweek.Columns.Add("Answer");
+
+        }
+
+        DataRow dr = dtweek.NewRow();
+
+
+
+        dr[0] = txtAnsweek.Text;
+
+
+
+        if (dtweek.Rows.Count > 0)
+        {
+            for (int f = 0; f < dtweek.Rows.Count; f++)
+            {
+
+
+                string u3 = dtweek.Rows[f][0].ToString();
+
+            }
+            //if (cnt > 0)
+            //{
+            //    g.ShowMessage(this.Page, "Already Exist");
+
+            //}
+            //else
+            //{
+            dtweek.Rows.Add(dr);
+            txtAnsweek.Text = "";
+            //ddlquestweek.SelectedIndex = 0;
+            //}
+        }
+        else
+        {
+            dtweek.Rows.Add(dr);
+            txtAnsweek.Text = "";
+            //ddlquestweek.SelectedIndex = 0;
+        }
+
+        ViewState["dtweek"] = dtweek;
+
+        grdweek.DataSource = dtweek;
+        grdweek.DataBind();
+
+    }
+    protected void imgeditweek_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton imgedit = (ImageButton)sender;
+        string ItemId = imgedit.CommandArgument;
+        dtweek = (DataTable)ViewState["dtweek"];
+
+
+        foreach (DataRow d in dtweek.Rows)
+        {
+            if (d[0].ToString() == imgedit.CommandArgument)
+            {
+
+                //ddlquestweek.SelectedValue = d["id"].ToString();
+
+                txtAnsweek.Text = d["Answer"].ToString();
+
+                d.Delete();
+                dtweek.AcceptChanges();
+                break;
+            }
+        }
+
+        grdweek.DataSource = dtweek;
+        grdweek.DataBind();
+    }
+    protected void imgdeleteweek_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton imgdelete = (ImageButton)sender;
+        string ServiceId = imgdelete.CommandArgument;
+        dtweek = (DataTable)ViewState["dtweek"];
+
+        foreach (DataRow d in dtweek.Rows)
+        {
+            if (d[0].ToString() == imgdelete.CommandArgument)
+            {
+
+                d.Delete();
+                dtweek.AcceptChanges();
+                break;
+            }
+        }
+
+        grdweek.DataSource = dtweek;
+        grdweek.DataBind();
+    }
+    protected void btnaddOper_Click(object sender, EventArgs e)
+    {
+        int cnt = 0;
+        if (ViewState["dtOper"] != null)
+        {
+            dtOper = (DataTable)ViewState["dtOper"];
+        }
+        else
+        {
+
+            DataColumn Ans = dtOper.Columns.Add("Answer");
+
+        }
+
+        DataRow dr = dtOper.NewRow();
+
+
+
+        dr[0] = txtAnsOper.Text;
+
+
+
+        if (dtOper.Rows.Count > 0)
+        {
+            for (int f = 0; f < dtOper.Rows.Count; f++)
+            {
+
+
+                string u3 = dtOper.Rows[f][0].ToString();
+
+            }
+
+            dtOper.Rows.Add(dr);
+            txtAnsOper.Text = "";
+
+        }
+        else
+        {
+            dtOper.Rows.Add(dr);
+            txtAnsOper.Text = "";
+            //ddlquestOper.SelectedIndex = 0;
+        }
+
+        ViewState["dtOper"] = dtOper;
+
+        grdOper.DataSource = dtOper;
+        grdOper.DataBind();
+    }
+    protected void imgeditoper_Click(object sender, ImageClickEventArgs e)
+    {
+
+        ImageButton imgedit = (ImageButton)sender;
+        string ItemId = imgedit.CommandArgument;
+        dtOper = (DataTable)ViewState["dtOper"];
+
+
+        foreach (DataRow d in dtOper.Rows)
+        {
+            if (d[0].ToString() == imgedit.CommandArgument)
+            {
+
+                //  ddlquestOper.SelectedValue = d["id"].ToString();
+
+                txtAnsOper.Text = d["Answer"].ToString();
+
+                d.Delete();
+                dtOper.AcceptChanges();
+                break;
+            }
+        }
+
+        grdOper.DataSource = dtOper;
+        grdOper.DataBind();
+    }
+    protected void imgdeleteoper_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton imgdelete = (ImageButton)sender;
+        string ServiceId = imgdelete.CommandArgument;
+        dtOper = (DataTable)ViewState["dtOper"];
+
+        foreach (DataRow d in dtOper.Rows)
+        {
+            if (d[0].ToString() == imgdelete.CommandArgument)
+            {
+
+                d.Delete();
+                dtOper.AcceptChanges();
+                break;
+            }
+        }
+
+        grdOper.DataSource = dtOper;
+        grdOper.DataBind();
+    }
+    protected void btnaddtherat_Click(object sender, EventArgs e)
+    {
+        int cnt = 0;
+        if (ViewState["dtTherat"] != null)
+        {
+            dtTherat = (DataTable)ViewState["dtTherat"];
+        }
+        else
+        {
+
+            DataColumn Ans = dtTherat.Columns.Add("Answer");
+
+        }
+
+        DataRow dr = dtTherat.NewRow();
+
+
+        //dr[0] = ddlquestthereat.SelectedValue;
+        //dr[1] = ddlquestthereat.SelectedItem.Text;
+        dr[0] = txtanswthreat.Text;
+
+
+
+        if (dtTherat.Rows.Count > 0)
+        {
+            for (int f = 0; f < dtTherat.Rows.Count; f++)
+            {
+
+
+                string u3 = dtTherat.Rows[f][0].ToString();
+
+            }
+
+            dtTherat.Rows.Add(dr);
+            txtanswthreat.Text = "";
+
+        }
+        else
+        {
+            dtTherat.Rows.Add(dr);
+            txtanswthreat.Text = "";
+
+        }
+
+        ViewState["dtTherat"] = dtTherat;
+
+        grdthereat.DataSource = dtTherat;
+        grdthereat.DataBind();
+
+    }
+    protected void imgeditthreat_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton imgedit = (ImageButton)sender;
+        string ItemId = imgedit.CommandArgument;
+        dtTherat = (DataTable)ViewState["dtTherat"];
+
+
+        foreach (DataRow d in dtTherat.Rows)
+        {
+            if (d[0].ToString() == imgedit.CommandArgument)
+            {
+
+                //ddlquestthereat.SelectedValue = d["id"].ToString();
+
+                txtanswthreat.Text = d["Answer"].ToString();
+
+                d.Delete();
+                dtTherat.AcceptChanges();
+                break;
+            }
+        }
+
+        grdthereat.DataSource = dtTherat;
+        grdthereat.DataBind();
+    }
+    protected void imgdeletethreat_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton imgdelete = (ImageButton)sender;
+        string ServiceId = imgdelete.CommandArgument;
+        dtTherat = (DataTable)ViewState["dtTherat"];
+
+        foreach (DataRow d in dtTherat.Rows)
+        {
+            if (d[0].ToString() == imgdelete.CommandArgument)
+            {
+
+                d.Delete();
+                dtTherat.AcceptChanges();
+                break;
+            }
+        }
+
+        grdthereat.DataSource = dtTherat;
+        grdthereat.DataBind();
+    }
+
+
+    protected void EditSWOT_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 13;
+        LinkButton lnk = (LinkButton)sender;
+        lblstrid.Text = lnk.CommandArgument;
+
+        // for Strength
+        DataTable dt1 = g.ReturnData("select SWOTStrTB.Answer  from SWOTStrTB left join SWOTMasterTB on SWOTStrTB.SWOTID=SWOTMasterTB.ID where SWOTDetailsID='" + Convert.ToInt32(lblstrid.Text) + "'");
+        grdswotStr.DataSource = dt1;
+        DataBind();
+        ViewState["dtstr"] = dt1;
+
+        // for Weekness
+        DataTable dt2 = g.ReturnData("select SWOTWeekTB.Answer  from SWOTWeekTB left join SWOTMasterTB on SWOTWeekTB.SWOTID=SWOTMasterTB.ID where SWOTDetailsID='" + Convert.ToInt32(lblstrid.Text) + "'");
+        grdweek.DataSource = dt2;
+        DataBind();
+        ViewState["dtweek"] = dt2;
+
+        //for Opportunity
+        DataTable dt3 = g.ReturnData("select SWOTOperTB.Answer  from SWOTOperTB left join SWOTMasterTB on SWOTOperTB.SWOTId=SWOTMasterTB.ID where SWOTDetailsID='" + Convert.ToInt32(lblstrid.Text) + "'");
+        grdOper.DataSource = dt3;
+        DataBind();
+        ViewState["dtOper"] = dt3;
+
+        //for Threat
+        DataTable dt4 = g.ReturnData("select SWOTThreatTB.Answer  from SWOTThreatTB left join SWOTMasterTB on SWOTThreatTB.SWOTID=SWOTMasterTB.ID where SWOTDetailsID='" + Convert.ToInt32(lblstrid.Text) + "'");
+        grdthereat.DataSource = dt4;
+        DataBind();
+        ViewState["dtTherat"] = dt4;
+        BtnSWOT.Text = "Update";
+
+    }
+    protected void grd_Dept_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        string empid = Session["UserId"].ToString();
+
+        bool Status = g.CheckAdmin(Convert.ToInt32(Session["UserId"]));
+
+        if (Status == true)
+        {
+            //MultiView1.ActiveViewIndex = 0;
+            grd_Dept.Columns[6].Visible = false;
+            grd_Dept.Columns[7].Visible = true;
+            grd_Dept.Columns[8].Visible = true;
+        }
+        else
+        {
+
+            grd_Dept.Columns[6].Visible = true;
+            grd_Dept.Columns[7].Visible = false;
+            grd_Dept.Columns[8].Visible = true;
+
+        }
+    }
+    protected void btnReveiwsubmit_Click(object sender, EventArgs e)
+    {
+        SWOTDetailsTB sw = db.SWOTDetailsTBs.Where(d => d.SWOTDetailsID == Convert.ToInt32(lblreveiw.Text)).First();
+        sw.Reveiw = txtRemark.Text;
+        db.SubmitChanges();
+        txtRemark.Text = "";
+    }
+    protected void btnReveiwcancel_Click(object sender, EventArgs e)
+    {
+        txtRemark.Text = "";
+        ModelPopUpSWOT.Hide();
+    }
+
+    private void Clearswot()
+    {
+
+        grdswotStr.DataSource = null;
+        grdswotStr.DataBind();
+        ViewState["dtstr"] = null;
+
+        grdweek.DataSource = null;
+        grdweek.DataBind();
+        ViewState["dtweek"] = null;
+
+        grdthereat.DataSource = null;
+        grdthereat.DataBind();
+        ViewState["dtTherat"] = null;
+
+        grdOper.DataSource = null;
+        grdOper.DataBind();
+        ViewState["dtOper"] = null;
+        bindgrid();
+    }
+
+
+    protected void BtnSWOT_Click(object sender, EventArgs e)
+    {
+        btnAddswotSTR.Visible = true;
+        if (BtnSWOT.Text == "Save")
+        {
+
+            if (ViewState["dtstr"] != null)
+            {
+
+
+                SWOTDetailsTB swt = new SWOTDetailsTB();
+                swt.EmpID = Convert.ToInt32(Session["UserId"]);
+                db.SWOTDetailsTBs.InsertOnSubmit(swt);
+                db.SubmitChanges();
+
+
+                DataTable dtstr1 = (DataTable)ViewState["dtstr"];
+                if (dtstr1 != null)
+                {
+                    for (int i = 0; i < dtstr1.Rows.Count; i++)
+                    {
+
+                        SWOTStrTB sws = new SWOTStrTB();
+                        sws.SWOTDetailsID = swt.SWOTDetailsID;
+                        sws.Empid = Convert.ToInt32(Session["UserId"]);
+                        sws.SWOTType = (dtstr1.Rows[i]["SWOTType"].ToString());
+                        sws.Answer = dtstr1.Rows[i]["Answer"].ToString();
+
+
+                        db.SWOTStrTBs.InsertOnSubmit(sws);
+                        db.SubmitChanges();
+
+
+
+                    }
+                }
+
+
+
+                g.ShowMessage(this.Page, "Saved Successfully");
+                MultiView1.ActiveViewIndex = 12;
+                Clearswot();
+            }
+            else
+            {
+                g.ShowMessage(this.Page, "Please give Answers of related to your Strength,Weekness,Opportunities,Threats Questions.");
+            }
+        }
+        else
+        {
+
+
+            SWOTDetailsTB swt = new SWOTDetailsTB();
+            swt.EmpID = Convert.ToInt32(Session["UserId"]);
+
+            db.SubmitChanges();
+
+            string strenght = Convert.ToString(Session["strenght"]);
+
+            // For Strength
+            string query1 = "delete SWOTStrTB where Answer='" + strenght + "'";
+
+            DataTable query11 = g.ReturnData(query1);
+
+            grdviewstr.DataSource = query11;
+            grdviewstr.DataBind();
+            ViewState["dtstr"] = null;
+
+
+            int strid = Convert.ToInt32(Session["strenght"]);
+
+
+
+            SWOTStrTB mt = db.SWOTStrTBs.Where(s => s.StrID == Convert.ToInt32(strid)).First();
+            mt.SWOTType = ddlqueststr.SelectedValue;
+            mt.Answer = txtAnswerstr.Text;
+
+            db.SubmitChanges();
+
+            BtnSWOT.Text = "Save";
+
+
+
+
+
+
+
+
+
+
+
+
+            DataTable dtstr1 = (DataTable)ViewState["dtstr"];
+            if (dtstr1 != null)
+            {
+                for (int i = 0; i < dtstr1.Rows.Count; i++)
+                {
+                    SWOTStrTB sws = new SWOTStrTB();
+                    //sws.SWOTDetailsID = Convert.ToInt32(lblstrid.Text);
+                    sws.Empid = Convert.ToInt32(Session["UserId"]);
+                    sws.SWOTType = (ddlqueststr.SelectedValue);
+                    sws.Answer = dtstr1.Rows[i]["Answer"].ToString();
+
+
+                    db.SWOTStrTBs.InsertOnSubmit(sws);
+                    db.SubmitChanges();
+
+                }
+            }
+            g.ShowMessage(this.Page, "Updated Successfully");
+            MultiView1.ActiveViewIndex = 12;
+
+            Clearswot();
+
+        }
+        bindgrid();
+        BindAllSwot();
+
+    }
+    protected void imgbtnviewSWOT_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton lnl = (ImageButton)sender;
+        lblview.Text = lnl.CommandArgument;
+        string IDHint = "100";
+        var data = from dt in db.SWOTDetailsTBs
+                   where dt.SWOTDetailsID == Convert.ToInt32(lblview.Text)
+                   select new
+                   {
+                       Name = dt.EmployeeTB.Solitude == 0 ? "Mr" + " " + dt.EmployeeTB.FName + " " + dt.EmployeeTB.MName + " " + dt.EmployeeTB.Lname : dt.EmployeeTB.Solitude == 1 ? "Ms" + " " + dt.EmployeeTB.FName + " " + dt.EmployeeTB.MName + " " + dt.EmployeeTB.Lname : dt.EmployeeTB.Solitude == 2 ? "Mrs" + " " + dt.EmployeeTB.FName + " " + dt.EmployeeTB.MName + " " + dt.EmployeeTB.Lname : "Dr." + " " + dt.EmployeeTB.FName + " " + dt.EmployeeTB.MName + " " + dt.EmployeeTB.Lname,
+                       //dt.EmployeeTB.CompanyInfoTB.CompanyName,
+                       //dt.EmployeeTB.MasterDeptTB.DeptName,
+                       //dt.EmployeeTB.MasterDesgTB.DesigName,
+                       dt.Reveiw,
+                       dt.EmployeeTB.EmployeeId,
+                   };
+        foreach (var item in data)
+        {
+            Label41.Text = item.Name;
+            Label42.Text = IDHint + "" + item.EmployeeId;
+            //Label43.Text = item.CompanyName;
+            //Label44.Text = item.DeptName;
+            //Label45.Text = item.DesigName;
+            Label46.Text = item.Reveiw;
+        }
+
+        // For Strength
+        var datastr = from dt in db.SWOTStrTBs
+                      where dt.SWOTDetailsID == Convert.ToInt32(lblview.Text)
+                      select new { dt.SWOTMasterTB.Question, dt.Answer };
+        if (datastr.Count() > 0)
+        {
+            grdviewstr.DataSource = datastr;
+            grdviewstr.DataBind();
+        }
+        else
+        {
+            grdviewstr.DataSource = null;
+            grdviewstr.DataBind();
+        }
+
+        // for Weekness
+        var dataweek = from dt in db.SWOTWeekTBs
+                       where dt.SWOTDetailsId == Convert.ToInt32(lblview.Text)
+                       select new { dt.SWOTMasterTB.Question, dt.Answer };
+        if (dataweek.Count() > 0)
+        {
+            grdviewWeek.DataSource = dataweek;
+            grdviewWeek.DataBind();
+        }
+        else
+        {
+            grdviewWeek.DataSource = null;
+            grdviewWeek.DataBind();
+        }
+
+        // for Opportunities
+        var dataoper1 = from dt1 in db.SWOTOperTBs
+                        where dt1.SWOTDetailsId == Convert.ToInt32(lblview.Text)
+                        select new { dt1.Answer };
+
+        if (dataoper1.Count() > 0)
+        {
+            grdviewOper.DataSource = dataoper1;
+            grdviewOper.DataBind();
+        }
+        else
+        {
+            grdviewOper.DataSource = null;
+            grdviewOper.DataBind();
+        }
+        // for Threats
+        var datathreat = from dt in db.SWOTThreatTBs
+                         where dt.SWOTDetailsID == Convert.ToInt32(lblview.Text)
+                         select new { dt.SWOTMasterTB.Question, dt.Answer };
+        if (datathreat.Count() > 0)
+        {
+            grdviewTHreat.DataSource = datathreat;
+            grdviewTHreat.DataBind();
+        }
+        else
+        {
+            grdviewTHreat.DataSource = null;
+            grdviewTHreat.DataBind();
+        }
+        modNewTax1.Show();
+    }
+
+
+    protected void lnkSWOT_Click(object sender, EventArgs e)
+    {
+
+        string empid = Session["UserId"].ToString();
+
+        bool Status = g.CheckAdmin(Convert.ToInt32(Session["UserId"]));
+
+        if (Status == true)
+        {
+
+            var data = from dt in db.SWOTDetailsTBs
+                       where dt.EmpID == Convert.ToInt32(Session["UserId"])
+                       select dt;
+            if (data.Count() > 0)
+            {
+                bindgrid();
+                grd_Dept.Columns[6].Visible = false;
+                grd_Dept.Columns[7].Visible = true;
+                grd_Dept.Columns[8].Visible = true;
+                MultiView1.ActiveViewIndex = 12;
+            }
+            else
+            {
+                MultiView1.ActiveViewIndex = 13;
+            }
+        }
+        else
+        {
+            var data = from dt in db.SWOTDetailsTBs
+                       where dt.EmpID == Convert.ToInt32(Session["UserId"])
+                       select dt;
+            if (data.Count() > 0)
+            {
+                MultiView1.ActiveViewIndex = 12;
+                bindgrid();
+                grd_Dept.Columns[6].Visible = true;
+                grd_Dept.Columns[7].Visible = false;
+                grd_Dept.Columns[8].Visible = true;
+
+            }
+            else
+            {
+                MultiView1.ActiveViewIndex = 13;
+            }
+        }
+
+    }
+    protected void GridviewSWOTStrength_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        GridviewSWOTStrength.PageIndex = e.NewPageIndex;
+        BindAllSwot();
+
+    }
+    protected void Button3_Click1(object sender, EventArgs e)
+    {
+
+        BindAllSelfDevNew();
+        BindSelfDev();
+
+    }
+    public void BindallApprovedLeaves()
+    {
+        // Approved Leaves
+
+        var LeaveData1 = (from r in db.tblLeaveApplications
+                          where r.AprovedDays != 0 && r.LeaveID == Convert.ToInt32(Session["leaveidd1"]) && r.employeeID == Convert.ToInt32(Session["UserId"])
+                          //   r.Duration != 0 && 
+                          //|| (r.ManagerStatus == "Not Approved" && r.Duration != 0 && r.LeaveID == Convert.ToInt32(Session["leaveidd1"]))
+                          select new
+                          {
+
+                              r.Duration,
+                              r.EndDate,
+                              r.LeaveApllicationDate,
+                              r.StartDate,
+                              r.employeeID,
+                              Name = (from p in db.EmployeeTBs where p.EmployeeId == r.employeeID select p.FName + " " + p.MName + " " + p.Lname).First(),
+                              r.Purpose,
+                              r.LeaveID,
+                              r.approval,
+                              r.LeaveApplicationID,
+                              r.ManagerStatus,
+                              leavename = (from d in db.masterLeavesTBs where d.LeaveID == r.LeaveID select d.LeaveName).First(),
+                          });
+
+
+        Grd_Leave_History1.DataSource = LeaveData1;
+        Grd_Leave_History1.DataBind();
+
+    }
+
+    protected void lnkhistory_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void btnhistoryview_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton img = (ImageButton)sender;
+        string leaveid1 = img.CommandArgument;
+
+        Session["leaveidd1"] = leaveid1;
+        BindallApprovedLeaves();
+
+        ModelLeaveApplicationHistory.Show();
+    }
+    protected void Grd_Leave_History1_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        Grd_Leave_History1.PageIndex = e.NewPageIndex;
+        BindallApprovedLeaves();
+
+        Grd_Leave_History1.DataBind();
+        ModelLeaveApplicationHistory.Show();
+    }
+
+    protected void lnkEditProfile_Click(object sender, EventArgs e)
+    {
+        Session["EditPage"] = "2";
+        int emp1 = int.Parse(Session["UserId"].ToString());
+        Response.Redirect("Employee.aspx?Empid=" + emp1);
+    }
+    //protected void lnkEditDocument_Click(object sender, EventArgs e)
+    //{
+    //    BindAllDOCUMENT();
+    //    MultiView1.ActiveViewIndex = 15;
+
+    //}
+
+    #region Document display & download
+    protected void lnkEditDocument_Click(object sender, EventArgs e)
+    {
+        //BindAllDOCUMENT();
+        bindEmpDoc();// Abdul By
+        MultiView1.ActiveViewIndex = 15;
+
+    }
+    // Abdul By
+    private void bindEmpDoc()
+    {
+        var fetchempDoc = from d in db.EmployeeDocumentMasterTBs
+                          where d.EmployeeId == Convert.ToInt32(Session["UserId"])
+                          select new { d.DocumentName, d.DocumentPath, d.DocumentId, d.Document_ID, d.EmployeeId, d.Description };
+        if (fetchempDoc.Count() > 0)
+        {
+            grddocument.DataSource = fetchempDoc;
+            grddocument.DataBind();
+        }
+        else
+        {
+            grddocument.DataSource = null;
+            grddocument.DataBind();
+        }
+
+        for (int i = 0; i < grddocument.Rows.Count; i++)
+        {
+            Image img = (Image)grddocument.Rows[i].FindControl("ImageDoc");
+            string DocumentName = grddocument.Rows[i].Cells[3].Text;
+
+
+            if (DocumentName.EndsWith(".docx") || DocumentName == "&nbsp;" || DocumentName.EndsWith(".xlsx"))
+            {
+                img.ImageUrl = "~\\Images\\th.jpg";
+                img.Height = Unit.Pixel(50);
+                img.Width = Unit.Pixel(70);
+            }
+            else if (DocumentName.EndsWith(".png") || DocumentName.EndsWith(".jpg") || DocumentName.EndsWith(".jpeg"))
+            {
+                img.ImageUrl = "~\\EmployeeDocument\\" + grddocument.Rows[i].Cells[3].Text;
+            }
+
+        }
+
+    }
+    protected void ImageDoc1_Click(object sender, ImageClickEventArgs e)
+    {
+
+    }
+    protected void lnkDownload_Click(object sender, ImageClickEventArgs e)
+    {
+        try
+        {
+            ImageButton lnkDoc = (ImageButton)sender;
+            string Docname = lnkDoc.CommandArgument;
+            string filePath;
+            var data = from doc in db.EmployeeDocumentMasterTBs
+                       where doc.DocumentPath == Docname
+                       select new
+                       {
+                           DocumentName = doc.DocumentPath
+                       };
+            if (data.Count() > 0)
+            {
+                string DocumentName = data.First().DocumentName;
+                filePath = "EmployeeDocument\\" + DocumentName;
+
+                if (DocumentName.EndsWith(".docx"))
+                {
+                    Response.ContentType = "application/docx";
+                }
+                else if (DocumentName.EndsWith(".xlsx"))
+                {
+                    Response.ContentType = "application/vnd.ms-excel";
+                }
+                else if (DocumentName.EndsWith(".png"))
+                {
+                    Response.ContentType = "image/png";
+                }
+                else if (DocumentName.EndsWith(".jpg"))
+                {
+                    Response.ContentType = "image/jpg";
+                }
+                Response.AddHeader("Content-Disposition", "attachment;filename=\"" + filePath + "\"");
+                Response.TransmitFile(Server.MapPath(filePath));
+                Response.End();
+            }
+        }
+        catch (Exception)
+        {
+
+            g.ShowMessage(this.Page, "There is no file");
+        }
+    }
+
+    #endregion
+
+
+
+
+
+
+    protected void imgbtnviewDocuments_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton imgEmp = (ImageButton)sender;
+        int EmpId = Convert.ToInt32(imgEmp.CommandArgument);
+
+        Session["E1"] = EmpId;
+        ModelPoUpDocumentDetails.Show();
+        BindAllEmployeeDOCUMENT();
+    }
+
+    public void BindAllEmployeeDOCUMENT()
+    {
+        var docData = (from d in db.EmployeeDocumentMasterTBs
+                       join e in db.EmployeeTBs on d.EmployeeId equals e.EmployeeId
+                       where d.EmployeeId == Convert.ToInt32(Session["UserId"])
+                       select new
+                       {
+                           d.EmployeeId,
+                           Status = d.Status == "0" ? "Passport Documents" : (d.Status == "1" ? "Visa Documents" : (d.Status == "2" ? "CV Documents" : (d.Status == "3" ? "Labour Card Documents" : (d.Status == "4" ? "Other Attachment" : ((d.Status == "5" ? "Other Attachment" : "Other Attachment")))))),
+
+                           Name = e.FName + ' ' + e.MName + ' ' + e.Lname,
+                           d.DocumentName
+
+                       }).Distinct();
+        if (docData.Count() > 0)
+        {
+            Grd_Employee_Documents.DataSource = docData;
+            Grd_Employee_Documents.DataBind();
+        }
+        else
+        {
+            Grd_Employee_Documents.DataSource = null;
+            Grd_Employee_Documents.DataBind();
+        }
+
+        for (int i = 0; i < Grd_Employee_Documents.Rows.Count; i++)
+        {
+            Image img = (Image)Grd_Employee_Documents.Rows[i].FindControl("ImageDoc");
+            img.ImageUrl = "~\\Attachments\\" + Grd_Employee_Documents.Rows[i].Cells[2].Text;
+        }
+    }
+
+    public void BindAllDOCUMENT()
+    {
+        var docData = (from d in db.EmployeeDocumentMasterTBs
+                       join c in db.CompanyInfoTBs on d.CompanyId equals c.CompanyId
+                       join e in db.EmployeeTBs on d.EmployeeId equals e.EmployeeId
+                       where d.EmployeeId == Convert.ToInt32(Session["UserId"])
+                       select new
+                       {
+                           d.EmployeeId,
+                           c.CompanyName,
+                           Name = e.FName + ' ' + e.MName + ' ' + e.Lname
+
+                       }).Distinct();
+        if (docData.Count() > 0)
+        {
+            grd_DOCUMENT.DataSource = docData;
+            grd_DOCUMENT.DataBind();
+            lblcnt.Text = docData.Count().ToString();
+        }
+    }
+
+    protected void OnClick_Edit(object sender, EventArgs e)
+    {
+
+    }
+    protected void Grd_Employee_Documents_DataBound(object sender, EventArgs e)
+    {
+        for (int rowIndex = Grd_Employee_Documents.Rows.Count - 2; rowIndex >= 0; rowIndex--)
+        {
+            GridViewRow gvrow = Grd_Employee_Documents.Rows[rowIndex];
+            GridViewRow gvprivous = Grd_Employee_Documents.Rows[rowIndex + 1];
+
+            for (int cellCount = 0; cellCount < gvrow.Cells.Count; cellCount++)
+            {
+                if (cellCount == 1)
+                {
+                    if (gvrow.Cells[cellCount].Text == gvprivous.Cells[cellCount].Text)
+                    {
+                        if (gvprivous.Cells[cellCount].RowSpan < 2)
+                        {
+                            gvrow.Cells[cellCount].RowSpan = 2;
+                        }
+
+                        else
+                        {
+                            gvrow.Cells[cellCount].RowSpan = gvprivous.Cells[cellCount].RowSpan + 1;
+                        }
+                        gvprivous.Cells[cellCount].Visible = false;
+                    }
+                }
+
+            }
+        }
+    }
+    protected void lnkDownload_Click(object sender, EventArgs e)
+    {
+        LinkButton lnkDoc = (LinkButton)sender;
+        string Docname = lnkDoc.CommandArgument;
+        string filePath;
+        var data = from doc in db.EmployeeDocumentMasterTBs
+                   where doc.DocumentName == Docname
+                   select new
+                   {
+                       doc.DocumentName
+                   };
+        if (data.Count() > 0)
+        {
+            string DocumentName = data.First().DocumentName;
+
+
+
+            //Response.ContentType = "application/octet-stream";
+            //Response.AddHeader("Content-Disposition", "attachment;filename=" + DocumentName);
+            //Response.TransmitFile(Server.MapPath("~/Attachments/" + DocumentName));
+            //Response.End();
+
+
+
+
+            filePath = "Attachments\\" + DocumentName;
+
+            if (DocumentName.EndsWith(".docx"))
+            {
+                Response.ContentType = "application/docx";
+            }
+            else if (DocumentName.EndsWith(".xlsx"))
+            {
+                Response.ContentType = "application/vnd.ms-excel";
+            }
+            else if (DocumentName.EndsWith(".png"))
+            {
+                Response.ContentType = "image/png";
+            }
+            else if (DocumentName.EndsWith(".jpg"))
+            {
+                Response.ContentType = "image/jpg";
+            }
+
+            Response.AddHeader("Content-Disposition", "attachment;filename=\"" + filePath + "\"");
+            Response.TransmitFile(Server.MapPath(filePath));
+            Response.End();
+        }
+    }
+    protected void ImageDoc_Click(object sender, ImageClickEventArgs e)
+    {
+
+    }
+}

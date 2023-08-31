@@ -1,0 +1,427 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Manualattendance : System.Web.UI.Page
+{
+    Genreal g = new Genreal();
+    HrPortalDtaClassDataContext HR = new HrPortalDtaClassDataContext();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        try
+        {
+            if (Session["UserId"] != null)
+            {
+                if (!IsPostBack)
+                {
+                    trintime.Visible = true;
+                    trouttime.Visible = true;
+                    txtDate.Text = g.GetCurrentDateTime().ToShortDateString();
+                    txtDate.Attributes.Add("readonly", "true");
+                    MultiView1.ActiveViewIndex = 0;
+                    Bindalldata();
+                    bindCompany();
+                    txtintimehours.Text = "09:00 AM";
+                    txtouttime.Text = "06:00 PM";
+                }
+                string confirmValue = Request.Form["confirm_value"];
+                if (confirmValue != null)
+                {
+                    CallMethod();
+                }
+            }
+            else
+            {
+                Response.Redirect("Login.aspx");
+            }
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+    private void bindCompany()
+    {
+        try
+        {
+            var dt = from p in HR.CompanyInfoTBs
+                     select new { p.CompanyName, p.CompanyId };
+            if (dt.Count() > 0)
+            {
+                ddlComp.DataSource = dt;
+                ddlComp.DataTextField = "CompanyName";
+                ddlComp.DataValueField = "CompanyId";
+                ddlComp.DataBind();
+                ddlComp.Items.Insert(0, "--Select--");
+            }
+            else
+            {
+                ddlComp.Items.Clear();
+                ddlComp.DataSource = null;
+                ddlComp.DataBind();
+                ddlComp.Items.Insert(0, "--Select--");
+            }
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+    private void GetEmpINOutTime()
+    {
+        try
+        {
+            DataTable dt = new DataTable();
+            if (ddlEmp.SelectedValue != "")
+            {
+                var val = HR.SP_GetINOutTime(Convert.ToDateTime(txtDate.Text), Convert.ToInt32(ddlEmp.SelectedValue)).ToList();
+                if (val.Count() > 0)
+                {
+                    foreach (var v in val)
+                    {
+                        string InTime = v.In.Replace(":", ".");
+                        string OutTime = v.Out.Replace(":", ".");
+                        string Itime, Otime, Itime1, Otime1;
+                        double ITime = Convert.ToDouble(InTime);
+                        double OTime = Convert.ToDouble(OutTime);
+                        if (ITime >= 12)
+                        {
+                            double I;
+                            if (ITime != 12.0)
+                            {
+                                I = ITime - 12;
+                            }
+                            else
+                            {
+                                I = ITime;
+                            }
+                            Itime = I.ToString();
+                            if (Itime.Length == 1 || Itime == "12")
+                            {
+                                Itime = Itime + ".00";
+                            }
+                            Itime1 = Itime.Replace(".", ":");
+                            txtintimehours.Text = Itime1.ToString() + "" + "PM";
+                        }
+                        else
+                        {
+                            Itime = ITime.ToString();
+                            if (Itime.Length == 1)
+                            {
+                                Itime = Itime + ".00";
+                            }
+                            Itime1 = Itime.Replace(".", ":");
+                            txtintimehours.Text = Itime1.ToString() + "" + "AM";
+                        }
+                        if (OTime < 12)
+                        {
+                            Otime = OTime.ToString();
+                            if (Otime.Length == 1)
+                            {
+                                Otime = Otime + ".00";
+                            }
+                            Otime = Otime.Replace(".", ":");
+                            txtouttime.Text = Otime.ToString() + "" + "AM";
+                        }
+                        else
+                        {
+                            double O;
+                            if (OTime != 12.0)
+                            {
+                                O = OTime - 12;
+                            }
+                            else
+                            {
+                                O = OTime;
+                            }
+                            Otime1 = O.ToString();
+                            if (Otime1.Length == 1 || Otime1 == "12")
+                            {
+                                Otime1 = Otime1 + ".00";
+                            }
+                            Otime = Otime1.Replace(".", ":");
+                            txtouttime.Text = Otime.ToString() + "" + "PM";
+                        }
+                    }
+                }
+                else
+                {
+                    txtintimehours.Text = "09:00 AM";
+                    txtouttime.Text = "06:00 PM";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+    private void Bindalldata()
+    {
+        try
+        {
+            var dt = (from p in HR.ManualAttendanceTBs
+                      join k in HR.EmployeeTBs on p.EmpID equals k.EmployeeId
+                      join c in HR.CompanyInfoTBs on p.CompID equals c.CompanyId
+                      where k.RelivingDate == null && p.AttendanceDate == Convert.ToDateTime(g.GetCurrentDateTime().ToShortDateString())
+                      select new { p.AttendanceDate, p.Remarks, p.Status, Name = k.FName + ' ' + k.MName + ' ' + k.Lname, c.CompanyName }).OrderByDescending(d => d.AttendanceDate);
+            if (dt.Count() > 0)
+            {
+                grdAtt.DataSource = dt;
+                grdAtt.DataBind();
+                lblcnt.Text = dt.Count().ToString();
+            }
+            else
+            {
+                lblcnt.Text = "0";
+                grdAtt.DataSource = null;
+                grdAtt.DataBind();
+            }
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+    protected void grdAtt_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grdAtt.PageIndex = e.NewPageIndex;
+        Bindalldata();
+    }
+    protected void btnadd_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 1;
+    }
+    public void OnConfirm(object sender, EventArgs e)
+    {
+        string confirmValue = Request.Form["confirm_value"];
+    }
+    public void CallMethod()
+    {
+        bool flag = false;
+        string confirmValue = Request.Form["confirm_value"];
+        if (confirmValue == "Yes")
+        {
+            flag = true;
+        }
+        if (flag == true)
+        {
+            #region
+            DateTime dtAttDate = Convert.ToDateTime(txtDate.Text);
+            var EmpData = (from d in HR.EmployeeTBs
+                           join b in HR.SalaryProcessDetailsTBs on d.EmployeeId equals b.EmployeeId
+                           where b.EmployeeId == Convert.ToInt32(ddlEmp.SelectedValue) && d.RelivingDate == null && b.MonthId == dtAttDate.Month && b.YearId == dtAttDate.Year
+                           select d);
+
+            if (EmpData.Count() == 0)
+            {
+                DateTime dtIn = DateTime.Parse(txtintimehours.Text);
+                //string InTime = dtIn.ToString("HH:mm:ss");  // 12:40:00
+
+                DateTime dtOut = DateTime.Parse(txtouttime.Text);
+                //string OutTime = dtOut.ToString("HH:mm:ss");  // 12:40:00
+
+                DateTime dtInTime = dtAttDate.Add(dtIn.TimeOfDay);
+                DateTime dtOutTime = dtAttDate.Add(dtOut.TimeOfDay);
+
+                var MinLog = (from d in HR.LogRecordsDetails where d.Employee_id == Convert.ToInt32(ddlEmp.SelectedValue) && DateTime.Compare(d.Log_Date_Time.Value.Date, dtAttDate.Date) == 0 select d.Log_id).Min();
+
+                var MaxLog = (from d in HR.LogRecordsDetails where d.Employee_id == Convert.ToInt32(ddlEmp.SelectedValue) && DateTime.Compare(d.Log_Date_Time.Value.Date, dtAttDate.Date) == 0 select d.Log_id).Max();
+
+                //// for IN time Entry
+                //LogRecordsDetail login = new LogRecordsDetail();
+                LogRecordsDetail login = HR.LogRecordsDetails.Where(min => min.Log_id == MinLog).FirstOrDefault();
+                login.Emp_Name = ddlEmp.SelectedItem.Text;
+                login.Employee_id = Convert.ToInt32(ddlEmp.SelectedValue);
+                login.Status = "M" + ddlStatus.Text.Substring(0, 1);
+                login.Log_Date_Time = dtInTime;
+                HR.SubmitChanges();
+
+                //// for Out time Entry
+                //LogRecordsDetail log = new LogRecordsDetail();
+                LogRecordsDetail logout = HR.LogRecordsDetails.Where(max => max.Log_id == MaxLog).FirstOrDefault();
+                logout.Emp_Name = ddlEmp.SelectedItem.Text;
+                logout.Employee_id = Convert.ToInt32(ddlEmp.SelectedValue);
+                logout.Status = "M" + ddlStatus.Text.Substring(0, 1);
+                logout.Log_Date_Time = dtOutTime;
+                HR.SubmitChanges();
+
+                //ManualAttendanceTB man = new ManualAttendanceTB();
+                ManualAttendanceTB man = HR.ManualAttendanceTBs.Where(m => m.EmpID == Convert.ToInt32(ddlEmp.SelectedValue) && m.LogID == MaxLog).FirstOrDefault();
+                man.AttendanceDate = Convert.ToDateTime(txtDate.Text);
+                man.CompID = Convert.ToInt32(ddlComp.SelectedValue);
+                man.EmpID = Convert.ToInt32(ddlEmp.SelectedValue);
+                man.LogID = logout.Log_id;
+                man.Remarks = txtRemrks.Text;
+                man.Status = "M" + ddlStatus.Text.Substring(0, 1);
+                man.LoginTime = txtintimehours.Text;
+                man.LogOutTime = txtouttime.Text;
+                HR.SubmitChanges();
+                g.ShowMessage(this.Page, "Manual Attendance Details Updated Successfully....");
+            }
+            else
+            {
+                g.ShowMessage(this.Page, "Sorry...!!! Salary process has been done.");
+            }
+            #endregion
+        }
+    }
+    protected void btnsubmit_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            var dt = from p in HR.LogRecordsDetails.Where(d => d.Log_Date_Time.Value.Date == Convert.ToDateTime(txtDate.Text) && d.Employee_id == Convert.ToInt32(ddlEmp.SelectedValue)) select p;
+            if (dt.Count() > 0)
+            {
+                g.ShowMessage(this.Page, "Attendance details already present for selected date");
+                ScriptManager.RegisterStartupScript(updt, updt.GetType(), "text", "Javascript:Confirm()", true);
+            }
+            else
+            {
+                #region save manual attendance details
+                DateTime dtAttDate = Convert.ToDateTime(txtDate.Text);
+                string leaveQuery = @"SELECT        LD.LeaveDetailsID, LD.LeaveApplicationID, LD.Day, LD.Month, LD.Year
+FROM            LeaveDetailsTB AS LD INNER JOIN
+                         tblLeaveApplication AS LA ON LD.LeaveApplicationID = LA.LeaveApplicationID
+where LD.HRApprove='Approved' AND LD.HRLeaveType='Full Day' AND LD.Day=" + dtAttDate.Date.Day + " AND LD.Month=" + dtAttDate.Date.Month + " AND LD.Year=" + dtAttDate.Date.Year + "";
+
+                DataTable dtLeavs = g.ReturnData(leaveQuery);
+                if (dtLeavs.Rows.Count > 0)
+                {
+                    g.ShowMessage(this.Page, "Sorry...!!! Already taken a leave for selected date.");
+                }
+                else
+                {
+                    var EmpData = (from d in HR.EmployeeTBs
+                                   join b in HR.SalaryProcessDetailsTBs on d.EmployeeId equals b.EmployeeId
+                                   where b.EmployeeId == Convert.ToInt32(ddlEmp.SelectedValue) && d.RelivingDate == null && b.MonthId == dtAttDate.Month && b.YearId == dtAttDate.Year
+                                   select d);
+
+                    if (EmpData.Count() == 0)
+                    {
+                        DateTime dtIn = DateTime.Parse(txtintimehours.Text);
+                        //string InTime = dtIn.ToString("HH:mm:ss");  // 12:40:00
+
+                        DateTime dtOut = DateTime.Parse(txtouttime.Text);
+                        //string OutTime = dtOut.ToString("HH:mm:ss");  // 12:40:00
+
+                        DateTime dtInTime = dtAttDate.Add(dtIn.TimeOfDay);
+                        DateTime dtOutTime = dtAttDate.Add(dtOut.TimeOfDay);
+
+                        //// for IN time Entry
+                        LogRecordsDetail login = new LogRecordsDetail();
+                        login.Emp_Name = ddlEmp.SelectedItem.Text;
+                        login.Employee_id = Convert.ToInt32(ddlEmp.SelectedValue);
+                        login.Status = "M" + ddlStatus.SelectedItem.Text.Substring(0, 1);
+                        login.Log_Date_Time = dtInTime;
+                        HR.LogRecordsDetails.InsertOnSubmit(login);
+                        HR.SubmitChanges();
+
+                        //// for Out time Entry
+                        LogRecordsDetail log = new LogRecordsDetail();
+                        log.Emp_Name = ddlEmp.SelectedItem.Text;
+                        log.Employee_id = Convert.ToInt32(ddlEmp.SelectedValue);
+                        log.Status = "M" + ddlStatus.SelectedItem.Text.Substring(0, 1);
+                        log.Log_Date_Time = dtOutTime;
+                        HR.LogRecordsDetails.InsertOnSubmit(log);
+                        HR.SubmitChanges();
+
+                        ManualAttendanceTB man = new ManualAttendanceTB();
+                        man.AttendanceDate = Convert.ToDateTime(txtDate.Text);
+                        man.CompID = Convert.ToInt32(ddlComp.SelectedValue);
+                        man.EmpID = Convert.ToInt32(ddlEmp.SelectedValue);
+                        man.LogID = log.Log_id;
+                        man.Remarks = txtRemrks.Text;
+                        man.Status = "M" + ddlStatus.SelectedItem.Text.Substring(0, 1);
+                        man.LoginTime = txtintimehours.Text;
+                        man.LogOutTime = txtouttime.Text;
+                        HR.ManualAttendanceTBs.InsertOnSubmit(man);
+                        HR.SubmitChanges();
+                        g.ShowMessage(this.Page, "Manual Attendance Details Saved Successfully");
+                    }
+                    else
+                    {
+                        g.ShowMessage(this.Page, "Sorry...!!! Salary process has been done.");
+                    }
+                }
+                #endregion
+            }
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+    protected void btncancel_Click(object sender, EventArgs e)
+    {
+        ClearAll();
+    }
+    private void ClearAll()
+    {
+        try
+        {
+            Bindalldata();
+            txtDate.Text = g.GetCurrentDateTime().ToShortDateString();
+            txtDate.Attributes.Add("readonly", "true");
+            txtRemrks.Text = "";
+            txtintimehours.Text = "09:00 AM";
+            txtouttime.Text = "06:00 PM";
+            ddlComp.SelectedIndex = 0;
+            ddlEmp.Items.Clear();
+            ddlStatus.SelectedIndex = 0;
+            MultiView1.ActiveViewIndex = 0;
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+    protected void ddlComp_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ddlComp.SelectedIndex > 0)
+        {
+            try
+            {
+                var dt = from k in HR.EmployeeTBs
+                         orderby k.FName
+                         where k.CompanyId == Convert.ToInt32(ddlComp.SelectedValue) && k.RelivingDate == null
+
+                         select new { Name = k.FName + ' ' + k.MName + ' ' + k.Lname, k.EmployeeId };
+                if (dt.Count() > 0)
+                {
+                    ddlEmp.DataSource = dt;
+                    ddlEmp.DataTextField = "Name";
+                    ddlEmp.DataValueField = "EmployeeId";
+                    ddlEmp.DataBind();
+                    ddlEmp.Items.Insert(0, "--Select--");
+                }
+                else
+                {
+                    ddlEmp.Items.Clear();
+                    ddlEmp.DataSource = null;
+                    ddlEmp.DataBind();
+                    ddlEmp.Items.Insert(0, "--Select--");
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+    }
+    protected void ddlStatus_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ddlStatus.SelectedIndex == 0 || ddlStatus.SelectedIndex == 2)
+        {
+            trintime.Visible = true;
+            trouttime.Visible = true;
+        }
+        else
+        {
+            trintime.Visible = false;
+            trouttime.Visible = false;
+        }
+    }
+    protected void txtDate_TextChanged(object sender, EventArgs e)
+    {
+        GetEmpINOutTime();
+    }
+}

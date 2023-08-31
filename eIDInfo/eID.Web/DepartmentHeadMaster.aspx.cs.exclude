@@ -1,0 +1,184 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class DepartmentHeadMaster : System.Web.UI.Page
+{
+    HrPortalDtaClassDataContext HR = new HrPortalDtaClassDataContext();
+    Genreal g = new Genreal();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (Session["UserId"] != null)
+        {
+            if (!IsPostBack)
+            {
+                MultiView1.ActiveViewIndex = 0;
+                BindAllSource();
+                fillempname();
+                filldeptname();
+            }
+        }
+        else
+        {
+            Response.Redirect("login.aspx");
+        }
+
+    }
+
+    protected void btnadd_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 1;
+    }
+
+    private void fillempname()
+    {
+        var data = (from dt in HR.EmployeeTBs 
+                   select new {name=dt.FName+' '+dt.MName+' '+dt.Lname,dt.EmployeeId }).OrderBy(d=>d.name);
+        if (data != null && data.Count() > 0)
+        {
+
+            ddlempname.DataSource = data;
+            ddlempname.DataTextField = "name";
+            ddlempname.DataValueField = "EmployeeId";
+            ddlempname.DataBind();
+            ddlempname.Items.Insert(0, "--Select--");
+        }
+    }
+
+    private void filldeptname()
+    {
+        var data = (from dt in HR.MasterDeptTBs where dt.Status==0
+                    select dt).OrderBy(d => d.DeptName);
+        if (data != null && data.Count() > 0)
+        {
+
+            ddldeptname.DataSource = data;
+            ddldeptname.DataTextField = "DeptName";
+            ddldeptname.DataValueField = "DeptID";
+            ddldeptname.DataBind();
+            ddldeptname.Items.Insert(0, "--Select--");
+        }
+    }
+
+    public void BindAllSource()
+    {
+
+        var Deptmaster = from s in HR.DepartmentHeadTBs select new { s.HeadId, Fname = s.EmployeeTB.FName + ' ' + s.EmployeeTB.MName + ' ' + s.EmployeeTB.Lname, s.MasterDeptTB.DeptName };
+        if (Deptmaster.Count() > 0)
+        {
+            grd_Deptmaster.DataSource = Deptmaster;
+            grd_Deptmaster.DataBind();
+
+        }
+
+
+    }
+
+    public void Clear()
+    {
+        
+        ddldeptname.SelectedValue = "--Select--";
+        ddlempname.SelectedValue = "--Select--";
+     
+     
+     
+        BindAllSource();
+        MultiView1.ActiveViewIndex = 0;
+
+    }
+
+    protected void btnsubmit_Click(object sender, EventArgs e)
+    {
+        int deptid = Convert.ToInt32(ddldeptname.SelectedValue);
+        if (btnsubmit.Text == "Save")
+        {
+            var dt = from p in HR.DepartmentHeadTBs.Where(d =>d.DeptID==deptid) select p;
+            if (dt.Count() > 0)
+            {
+                g.ShowMessage(this.Page, "Dept Head Already Assigned");
+            }
+            else
+            {
+
+                DepartmentHeadTB mtb = new DepartmentHeadTB();
+                mtb.DeptID = Convert.ToInt32(ddldeptname.SelectedValue);
+                mtb.EmpID = Convert.ToInt32(ddlempname.SelectedValue);
+
+                HR.DepartmentHeadTBs.InsertOnSubmit(mtb);
+                HR.SubmitChanges();
+            }
+
+            //modpop.Message = "Submitted Successfully";
+            //modpop.ShowPopUp();
+
+            g.ShowMessage(this.Page, "Add Data Successfully");
+            Clear();
+        }
+        else
+        {
+             var dt = from p in HR.DepartmentHeadTBs.Where(d =>d.DeptID==deptid && d.HeadId== Convert.ToInt32(lblheadid.Text)) select p;
+             if (dt.Count() > 0)
+             {
+
+                 DepartmentHeadTB mt = HR.DepartmentHeadTBs.Where(s => s.HeadId == Convert.ToInt32(lblheadid.Text)).First();
+                 mt.DeptID = Convert.ToInt32(ddldeptname.SelectedValue);
+                 mt.EmpID = Convert.ToInt32(ddlempname.SelectedValue);
+                 HR.SubmitChanges();
+
+                 g.ShowMessage(this.Page, "Updated Successfully");
+                 btnsubmit.Text = "Save";
+                 Clear();
+             }
+             else
+             {
+                  dt = from p in HR.DepartmentHeadTBs.Where(d => d.DeptID == deptid) select p;
+                 if (dt.Count() > 0)
+                 {
+                     g.ShowMessage(this.Page, "Dept Head Already Assigned");
+                 }
+                 else
+                 {
+                      DepartmentHeadTB mt = HR.DepartmentHeadTBs.Where(s => s.HeadId == Convert.ToInt32(lblheadid.Text)).First();
+                 mt.DeptID = Convert.ToInt32(ddldeptname.SelectedValue);
+                 mt.EmpID = Convert.ToInt32(ddlempname.SelectedValue);
+                 HR.SubmitChanges();
+
+                 g.ShowMessage(this.Page, "Updated Successfully");
+                 btnsubmit.Text = "Save";
+                 Clear();
+                 }
+             }
+            //modpop.Message = "Updated Successfully";
+            //modpop.ShowPopUp();
+           
+        }
+        
+    }
+           
+    protected void Unnamed1_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 1;
+
+
+
+
+        LinkButton Lnk = (LinkButton)sender;
+        string HeadID = Lnk.CommandArgument;
+        lblheadid.Text = HeadID;
+
+        //int deptid = lbldeptid.Text;
+        DepartmentHeadTB mt = HR.DepartmentHeadTBs.Where(s => s.HeadId == Convert.ToInt32(HeadID)).First();
+        ddlempname.SelectedValue = Convert.ToInt32(mt.EmpID).ToString();
+        ddldeptname.SelectedValue = Convert.ToInt32(mt.DeptID).ToString();
+       
+        btnsubmit.Text = "Update";
+    }
+
+    protected void btncancel_Click(object sender, EventArgs e)
+    {
+        Clear();
+    }
+}

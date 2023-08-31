@@ -1,0 +1,451 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class ViewTrainingRequestForm : System.Web.UI.Page
+{
+    // Created By Abdul Rahman : Training request View.
+    HrPortalDtaClassDataContext HR = new HrPortalDtaClassDataContext();
+    Genreal g = new Genreal();
+    
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (Session["UserId"] != null)
+        {
+
+            if (!IsPostBack)
+            {
+                #region  For Training Shedule Edit On Calendar
+                if (!String.IsNullOrEmpty(Request.QueryString["id"]))
+                {
+                    int trainingid = int.Parse(Request.QueryString["id"]);
+                    HiddenFieldEdit.Value = Convert.ToInt32(trainingid).ToString();
+                    if (trainingid > 0)
+                    {
+                        mul.ActiveViewIndex = 1;
+                        btnShedule.Text = "Update Shedule";
+                        var datafetch = from d in HR.TrainingRequestTBs
+                                        where d.Training_SheduleID ==Convert.ToInt32( HiddenFieldEdit.Value)
+                                        select new { d.TrainingRequest_ID, CompanyName = d.CompanyInfoTB.CompanyName, Department = d.MasterDeptTB.DeptName,d.Request_Date };
+
+                        TrainingSheduleTB tb = HR.TrainingSheduleTBs.Where(d => d.Training_Shedule_ID == trainingid).First();
+
+                        txtDate.Text = tb.Training_Date.ToString().Replace("12:00:00 AM", " ");
+                        ddltime.SelectedValue = tb.Time.ToString();
+                        ddlampm.SelectedValue = tb.AM_PM.ToString();
+                        txttrainer.Text = tb.Trainer_Name;
+                        txtlocation.Text = tb.Training_Location;
+                        txtremark.Text = tb.Remarks;
+                        txttopic.Text = tb.Training_Topic;
+                        if (datafetch != null && datafetch.Count() > 0)
+                        {
+                            foreach (var item in datafetch)
+                            {
+                                lblcompany.Text = item.CompanyName;
+                                lbldept.Text = item.Department;
+                                lblreqDate.Text = item.Request_Date.ToString().Replace("12:00:00 AM", " ");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    mul.ActiveViewIndex = 0;
+                }
+                
+        #endregion
+                FillCompany();
+                FillDept();
+                Bindgrdview();
+                BindgrdAccept();
+                BindGrgdCancel();
+            }
+        }
+        else
+        {
+            Response.Redirect("~/Default.aspx");
+        }
+    }
+
+    protected void Message(string msg)
+    {
+        string rmsg = "<script language='javascript'>window.alert('" + msg + "')</script>";
+        ScriptManager.RegisterStartupScript(this, this.GetType(), "", rmsg, false);
+    }
+    private void FillDept()
+    {
+        var data = from dt in HR.MasterDeptTBs
+                   where dt.Status == 0
+                   orderby dt.DeptName ascending
+                   select new {dt.DeptID,dt.DeptName };
+        if (data != null && data.Count() > 0)
+        {
+
+            ddllist.DataSource = data;
+            ddllist.DataTextField = "DeptName";
+            ddllist.DataValueField = "DeptID";
+            ddllist.DataBind();
+            ddllist.Items.Insert(0, "--Select--");
+        }
+    }
+
+    private void FillCompany()
+    {
+         var data = from d in HR.CompanyInfoTBs
+                   where d.Status == 0 orderby d.CompanyName ascending
+                   select new {d.CompanyId,d.CompanyName };
+        if (data != null && data.Count() > 0)
+        {
+            ddllist.DataSource = data;
+            ddllist.DataTextField = "CompanyName";
+            ddllist.DataValueField = "CompanyId";
+            ddllist.DataBind();
+            ddllist.Items.Insert(0,"--Select--");
+        }
+    }
+
+    private void BindGrgdCancel()
+    {
+        var Data = from d in HR.TrainingRequestTBs
+                   where d.Status == 2
+                   select new { d.TrainingRequest_ID, CompanyName = d.CompanyInfoTB.CompanyName, DepartmentName = d.MasterDeptTB.DeptName, EmpName = d.EmployeeTB.FName + " " + d.EmployeeTB.Lname, d.Request_Date, d.Training_Topic };
+
+        if (ddlsort.SelectedIndex == 1 && ddllist.SelectedIndex > 0)
+        {
+            Data = Data.Where(d => d.CompanyName == ddllist.SelectedItem.Text);
+        }
+        if (ddlsort.SelectedIndex == 2 && ddllist.SelectedIndex > 0)
+        {
+            Data = Data.Where(d => d.DepartmentName == ddllist.SelectedItem.Text);
+        }
+        if (ddlsort.SelectedIndex == 3 && txttopicfind.Text != "")
+        {
+            Data = Data.Where(d => d.Training_Topic == txttopicfind.Text);
+        }
+
+        if (Data.Count() > 0)
+        {
+            grdcancel.DataSource = Data;
+            grdcancel.DataBind();
+        }
+        else
+        {
+            grdcancel.DataSource = null;
+            grdcancel.DataBind();
+        }
+
+    }
+
+    private void BindgrdAccept()
+    {
+        var Data = from d in HR.TrainingSheduleTBs
+                   where d.TrainingRequestTB.Status == 1
+                   select new
+                   {
+                       d.Training_Shedule_ID,
+                       CompanyName = d.CompanyInfoTB.CompanyName,
+                       DepartmentName = d.MasterDeptTB.DeptName,
+                       EmpName = d.TrainingRequestTB.EmployeeTB.FName + " " + d.TrainingRequestTB.EmployeeTB.Lname,
+
+                       Request_Date=d.TrainingRequestTB.Request_Date,
+                       d.Training_Topic,
+                       d.Training_Location,
+                       d.Trainer_Name,
+                       d.Training_Date,
+                       Time = d.AM_PM.ToString() =="1" ? d.Time +"AM" : d.Time +"PM",
+
+                      };
+
+        if (ddlsort.SelectedIndex == 1 && ddllist.SelectedIndex>0)
+        {
+            Data = Data.Where(d => d.CompanyName == ddllist.SelectedItem.Text);
+        }
+        if (ddlsort.SelectedIndex == 2 && ddllist.SelectedIndex > 0)
+        {
+            Data = Data.Where(d => d.DepartmentName == ddllist.SelectedItem.Text);
+        }
+        if (ddlsort.SelectedIndex == 3 && txttopicfind.Text != "")
+        {
+            Data = Data.Where(d => d.Training_Topic == txttopicfind.Text);
+        }
+
+        if (Data.Count() > 0)
+        {
+            Gridaccept.DataSource = Data;
+            Gridaccept.DataBind();
+        }
+        else
+        {
+            Gridaccept.DataSource = null;
+            Gridaccept.DataBind();
+        }
+    }
+
+    private void Bindgrdview()
+    {
+        var Data = from d in HR.TrainingRequestTBs
+                   where d.Status == 0
+                   select new {d.TrainingRequest_ID,CompanyName=d.CompanyInfoTB.CompanyName, DepartmentName=d.MasterDeptTB.DeptName, EmpName=d.EmployeeTB.FName +" "+ d.EmployeeTB.Lname, d.Request_Date,d.Training_Topic,d.CompanyID,d.Department_ID,d.Emp_ID };
+
+        if (ddlsort.SelectedIndex == 1 && ddllist.SelectedIndex > 0)
+        {
+            Data = Data.Where(d => d.CompanyName == ddllist.SelectedItem.Text);
+        }
+        if (ddlsort.SelectedIndex == 2 && ddllist.SelectedIndex > 0)
+        {
+            Data = Data.Where(d => d.DepartmentName == ddllist.SelectedItem.Text);
+        }
+        if (ddlsort.SelectedIndex == 3 && txttopicfind.Text !="")
+        {
+            Data = Data.Where(d => d.Training_Topic == txttopicfind.Text);
+        }
+
+        if (Data.Count() > 0 )
+        {
+            grdviewrequst.DataSource = Data;
+            grdviewrequst.DataBind();
+        }
+        else
+        {
+            grdviewrequst.DataSource = null;
+            grdviewrequst.DataBind();
+        }
+
+    }
+    protected void lnkselect_Click(object sender, EventArgs e)
+    {
+        // Select Set Shedule training
+        mul.ActiveViewIndex = 1;
+        LinkButton Lnk = (LinkButton)sender;
+        string ID = Lnk.CommandArgument;
+        HiddenField1.Value = ID;
+        var FetchData = from d in HR.TrainingRequestTBs
+                        where d.TrainingRequest_ID == Convert.ToInt32(HiddenField1.Value)
+                        select new {d.TrainingRequest_ID,CompanyName=d.CompanyInfoTB.CompanyName ,Department=d.MasterDeptTB.DeptName, d.Training_Topic,d.Request_Date };
+        if (FetchData !=null &&  FetchData .Count() >0)
+        {
+            foreach (var item in FetchData)
+            {
+                lblcompany.Text = item.CompanyName;
+                lbldept.Text = item.Department;
+                txttopic.Text = item.Training_Topic;
+                lblreqDate.Text = item.Request_Date.ToString().Replace("12:00:00 AM", " ");
+
+            }
+        }
+        else
+        {
+            lblcompany.Text="";
+            lbldept.Text="";
+            txttopic.Text = "";
+            lblreqDate.Text = "";
+
+        }
+    }
+    protected void LinkCancel_Click(object sender, EventArgs e)
+    {
+        // Cancel training request...
+        LinkButton Lnk = (LinkButton)sender;
+        string ID = Lnk.CommandArgument;
+        lblid.Text = ID;
+        TrainingRequestTB mt = HR.TrainingRequestTBs.Where(d => d.TrainingRequest_ID == Convert.ToInt32(lblid.Text)).First();
+        mt.Status = 2;
+        HR.SubmitChanges();
+        Bindgrdview();
+        BindGrgdCancel();
+        BindgrdAccept();
+
+    }
+
+    protected void ddlsort_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ddlsort .SelectedIndex == 0)
+        {
+            lblname.Visible = false;
+            ddllist.Visible = false;
+            txttopicfind.Visible = false;
+            Bindgrdview();
+            BindGrgdCancel();
+            BindgrdAccept();
+        }
+        if (ddlsort.SelectedIndex ==1)
+        {
+            lblname.Text = "";
+            lblname.Visible = true;
+            ddllist.Visible = true;
+            txttopicfind.Visible = false;
+            lblname.Text = "Company Name";
+            FillCompany();
+        }
+        if (ddlsort.SelectedIndex == 2)
+        {
+            lblname.Text = "";
+            lblname.Visible = true;
+            ddllist.Visible = true;
+            txttopicfind.Visible = false;
+            lblname.Text = "Department";
+            FillDept();
+        }
+        if (ddlsort.SelectedIndex == 3)
+        {
+            lblname.Text = "";
+            lblname.Visible = true;
+            ddllist.Visible = false;
+            txttopicfind.Visible = true;
+            lblname.Text = "Topic Name";
+            
+        }
+    }
+
+    [System.Web.Services.WebMethodAttribute(), System.Web.Script.Services.ScriptMethodAttribute()]
+    public static List<string> GetNames(string prefixText, int count, string contextKey)
+    {
+        HrPortalDtaClassDataContext HR = new HrPortalDtaClassDataContext();
+        List<string> TopicName = (from d in HR.TrainingRequestTBs where  d.Training_Topic.StartsWith(prefixText) select d.Training_Topic).Distinct().ToList();
+        return TopicName;
+    }
+    protected void btnShedule_Click(object sender, EventArgs e)
+    {
+
+        var datafetch=from d in HR.TrainingRequestTBs
+                      where d.TrainingRequest_ID==Convert.ToInt32(HiddenField1.Value)
+                      select new { d.TrainingRequest_ID, d.CompanyID,d.Department_ID, d.Training_Topic,d.Emp_ID };
+
+        if (btnShedule.Text == "Shedule")
+        {
+            TrainingSheduleTB TS = new TrainingSheduleTB();
+            TS.Training_Date = Convert.ToDateTime(txtDate.Text);
+            TS.Time = Convert.ToInt32(ddltime.SelectedValue);
+            TS.AM_PM = Convert.ToInt32(ddlampm.SelectedValue);
+            TS.Trainer_Name = txttrainer.Text;
+            TS.Training_Location = txtlocation.Text;
+            TS.Remarks = txtremark.Text;
+            TS.Training_Request_ID = Convert.ToInt32(HiddenField1.Value);
+            TS.Shedule_Status = 0;
+            if (datafetch != null && datafetch.Count() > 0)
+            {
+                foreach (var item in datafetch)
+                {
+                    TS.company_ID = item.CompanyID;
+                    TS.Depart_ID = item.Department_ID;
+                    TS.Training_Topic = item.Training_Topic;
+                    TS.User_ID = item.Emp_ID;
+
+                }
+            }
+            HR.TrainingSheduleTBs.InsertOnSubmit(TS);
+            HR.SubmitChanges();
+
+            TrainingRequestTB up = HR.TrainingRequestTBs.Where(d => d.TrainingRequest_ID == Convert.ToInt32(HiddenField1.Value)).First();
+            up.Status = 1;
+            up.Training_SheduleID = TS.Training_Shedule_ID;
+            HR.SubmitChanges();
+            Message("Sheduled Send Successfully");
+        }
+        else
+        {
+           
+        TrainingSheduleTB mt = HR.TrainingSheduleTBs.Where(d => d.Training_Shedule_ID == Convert.ToInt32(HiddenFieldEdit.Value)).First();
+        mt.Training_Date = Convert.ToDateTime(txtDate.Text);
+        mt.Time = Convert.ToInt32(ddltime.SelectedValue);
+        mt.AM_PM = Convert.ToInt32(ddlampm.SelectedValue);
+        mt.Trainer_Name = txttrainer.Text;
+        mt.Training_Location = txtlocation.Text;
+        mt.Remarks = txtremark.Text;
+        mt.Training_Topic = txttopic.Text;
+        
+        HR.SubmitChanges();
+        Message("Sheduled Updated Successfully");
+        btnShedule.Text = "Shedule";
+        clearFields();
+        mul.ActiveViewIndex = 0;
+        Bindgrdview();
+        BindGrgdCancel();
+        BindgrdAccept();
+        Response.Redirect("TrainingCalender.aspx");
+        }
+        clearFields();
+        mul.ActiveViewIndex = 0;
+        Bindgrdview();
+        BindGrgdCancel();
+        BindgrdAccept();
+
+    }
+    private void ClearInputs(ControlCollection ctrls)
+    {
+        foreach (Control ctrl in ctrls)
+        {
+            if (ctrl is TextBox)
+                ((TextBox)ctrl).Text = string.Empty;
+            else if (ctrl is DropDownList)
+                ((DropDownList)ctrl).ClearSelection();
+
+            ClearInputs(ctrl.Controls);
+        }
+    }
+    private void clearFields()
+    {
+        ClearInputs(Page.Controls);
+    }
+    protected void btncancel_Click(object sender, EventArgs e)
+    {
+
+        if (!String.IsNullOrEmpty(Request.QueryString["id"]))
+        {
+            Response.Redirect("TrainingCalender.aspx"); 
+        }
+        else
+        {
+             Response.Redirect("ViewTrainingRequestForm.aspx");
+        }
+       
+       
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        Bindgrdview();
+        BindGrgdCancel();
+        BindgrdAccept();
+    }
+    protected void grdviewrequst_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grdviewrequst.PageIndex = e.NewPageIndex;
+        Bindgrdview();
+
+    }
+    protected void Gridaccept_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        Gridaccept.PageIndex = e.NewPageIndex;
+        BindgrdAccept();
+    }
+    protected void grdcancel_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grdcancel.PageIndex = e.NewPageIndex;
+        BindGrgdCancel();
+    }
+
+    protected void txtDate_TextChanged(object sender, EventArgs e)
+    {
+       
+       // string WDATE =DateTime.ParseExact(lblreqDate.Text, "MM/dd/yyyy", null).ToString("yyyy/MM/dd").Replace(""," ");
+        
+        DateTime PD = Convert.ToDateTime(lblreqDate.Text);
+
+        string NDATTE = DateTime.ParseExact(txtDate.Text, "MM/dd/yyyy", null).ToString("yyyy/MM/dd");
+        DateTime ND = Convert.ToDateTime(NDATTE);
+        if (PD > ND)
+        {
+            lblmessage.Visible = true;
+            lblmessage.Text = " 'You Can't Select Less Than Request Date' ";
+           // Message("You Can't Select Less Than Request Date  ");
+            txtDate.Text = "";
+        }
+        else
+        {
+            lblmessage.Visible = false;
+        }
+    }
+}

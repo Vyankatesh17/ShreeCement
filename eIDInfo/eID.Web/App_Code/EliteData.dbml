@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="etimetracklite1" Class="EliteDataDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="WebSettings" ConnectionString="Data Source=103.240.91.206;Initial Catalog=etimetracklite1;Persist Security Info=True;User ID=eidinfo" SettingsObjectName="System.Configuration.ConfigurationManager.ConnectionStrings" SettingsPropertyName="etimetracklite1ConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.Devices" Member="Devices">
+    <Type Name="Device">
+      <Column Name="DeviceId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="DeviceFName" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="DeviceSName" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="DeviceDirection" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="SerialNumber" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="ConnectionType" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="IpAddress" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="BaudRate" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="CommKey" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="ComPort" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="LastLogDownloadDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="C1" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C2" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C3" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C4" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C5" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C6" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C7" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="TransactionStamp" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="LastPing" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="DeviceType" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="OpStamp" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="DownLoadType" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Timezone" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="DeviceLocation" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="TimeOut" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="FaceDeviceType" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="MasterId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AttPhotoStamp" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="DeviceActivationCode" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.DeviceCommands" Member="DeviceCommands">
+    <Type Name="DeviceCommand">
+      <Column Name="DeviceCommandId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Title" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="DeviceCommand" Member="DeviceCommand1" Type="System.String" DbType="NText" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="SerialNumber" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Status" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Type" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="CreationDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="ExecutionDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="DeviceCommandFace" Type="System.String" DbType="NText" CanBeNull="true" UpdateCheck="Never" />
+    </Type>
+  </Table>
+  <Table Name="dbo.EmployeesBio" Member="EmployeesBios">
+    <Type Name="EmployeesBio">
+      <Column Name="EmployeeBioId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="EmployeeId" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="BioType" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="BioVersion" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="BioId" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Bio" Type="System.String" DbType="NText" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="FaceBio1" Type="System.String" DbType="NText" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="FaceBio2" Type="System.String" DbType="NText" CanBeNull="true" UpdateCheck="Never" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Employees" Member="Employees">
+    <Type Name="Employee">
+      <Column Name="EmployeeId" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="EmployeeName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="EmployeeCode" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="StringCode" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="NumericCode" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Gender" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="CompanyId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="DepartmentId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Designation" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="CategoryId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="DOJ" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="DOR" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="DOC" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="EmployeeCodeInDevice" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="EmployeeRFIDNumber" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="EmployementType" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="Status" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="EmployeeDevicePassword" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="EmployeeDeviceGroup" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="FatherName" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="MotherName" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="ResidentialAddress" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="PermanentAddress" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="ContactNo" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Email" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="DOB" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="PlaceOfBirth" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Nomenee1" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Nomenee2" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Remarks" Type="System.String" DbType="NText" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="RecordStatus" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="C1" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C2" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C3" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C4" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C5" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C6" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="C7" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Location" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="BLOODGROUP" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="WorkPlace" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="ExtensionNo" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="LoginName" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="LoginPassword" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Grade" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Team" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="IsRecieveNotification" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="HolidayGroup" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ShiftGroupId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ShiftRosterId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="LastModifiedBy" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="AadhaarNumber" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="EmployeePhoto" Type="System.Data.Linq.Binary" DbType="Image" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="MasterDeviceId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="BIOPhoto1" Type="System.String" DbType="NText" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="BIOPhotoPic" Type="System.Data.Linq.Binary" DbType="Image" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="DeviceExpiryRule" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="DeviceExpiryStartDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="DeviceExpiryEndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="DeviceId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="EnrolledDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="MigrateToOtherCryptography" Type="System.Int32" DbType="Int" CanBeNull="true" />
+    </Type>
+  </Table>
+</Database>
